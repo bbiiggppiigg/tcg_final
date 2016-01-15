@@ -189,13 +189,14 @@ int main(int argc, char* argv[]) {
 	    protocol->send(src, dst);
 	    protocol->recv(mov, remain_time);
 	    if( color == 2)
-		color = protocol->get_color(mov);
+			color = protocol->get_color(mov);
 	    B.who = color;
 	    B.DoMove(m, chess2fin(mov[3]));
+	    
 	    protocol->recv(mov, remain_time);
 	    m.st = mov[0] - 'a' + (mov[1] - '1')*4;
 	    m.ed = (mov[2]=='(')?m.st:(mov[3] - 'a' + (mov[4] - '1')*4);
-	    B.DoMove(m, chess2fin(mov[3]));
+    	B.DoMove(m, chess2fin(mov[3]));
 	}
 	else // ¹ï¤è¥ý
 	{
@@ -235,3 +236,11 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+bool TimesUp() {
+#ifdef _WINDOWS
+	return GetTickCount()-Tick>=TimeOut;
+#else
+	return clock() - Tick > TimeOut;
+#endif
+}
+

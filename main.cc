@@ -12,7 +12,8 @@
 #include"anqi.hh"
 #include"Protocol.h"
 #include"ClientSocket.h"
-#define MAX_HASH 99999989
+#define MAX_HASH 999989
+//#define MAX_HASH 99999989
 trans_node trans_table [MAX_HASH];
 #ifdef _WINDOWS
 #include<windows.h>

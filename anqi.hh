@@ -2,15 +2,15 @@
 #ifndef ANQI
 #define ANQI
 #define get_max(a,b) ((a) > (b) ? (a) : (b))
-#define get_min(a,b) ((a) < (b) ? (a) : (b))	
+#define get_min(a,b) ((a) < (b) ? (a) : (b))
 
 // (color)
-//  0 = ¬õ¤è (¤j¼g¦r¥À)  red 
-//  1 = ¶Â¤è (¤p¼g¦r¥À)  black 
+//  0 = ¬õ¤è (¤j¼g¦r¥À)  red
+//  1 = ¶Â¤è (¤p¼g¦r¥À)  black
 // -1 = ³£¤£¬O
 typedef int CLR;
 typedef  int SCORE;
-typedef unsigned int U32; 
+typedef unsigned int U32;
 typedef int POS;
 
 static const SCORE INF=1000001;
@@ -20,7 +20,7 @@ static const U32 check_table[32][15] = {{92224486,1681226715,1935055426,98419461
 const int DEFAULTTIME = 15;
 
 
-// (level) 
+// (level)
 enum LVL {
 	LVL_K=0, // «Ó±N King
 	LVL_G=1, // ¥K¤h Guard
@@ -57,7 +57,7 @@ typedef struct MOV {
 	bool is_eat_move;
 	MOV() {}
 	MOV(POS s,POS e):st(s),ed(e) {}
-	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){}; 
+	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){};
 	bool operator==(const MOV &x) const {return st==x.st&&ed==x.ed;}
 	MOV operator=(const MOV &x) {st=x.st;ed=x.ed;return MOV(x.st, x.ed);}
 }MOV;
@@ -107,7 +107,5 @@ CLR  GetColor(FIN);    // ºâ¥X´Ñ¤lªºÃC¦â
 LVL  GetLevel(FIN);    // ºâ¥X´Ñ¤lªº¶¥¯Å
 bool ChkEats(FIN,FIN); // §PÂ_²Ä¤@­Ó´Ñ¤l¯à§_¦Y²Ä¤G­Ó´Ñ¤l
 void Output (MOV);     // ±Nµª®×¶Çµ¹ GUI
-extern trans_node trans_table [99999989];
+extern trans_node trans_table [999989];
 #endif
-
-

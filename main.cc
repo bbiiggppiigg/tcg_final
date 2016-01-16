@@ -23,13 +23,13 @@ SCORE SearchMax(const BOARD&,int,int);
 SCORE SearchMin(const BOARD&,int,int);
 
 #ifdef _WINDOWS
-DWORD Tick;     // ¶}©l®É¨è
-int   TimeOut;  // ®É­­
+DWORD Tick;     // ï¿½}ï¿½lï¿½É¨ï¿½
+int   TimeOut;  // ï¿½É­ï¿½
 #else
-clock_t Tick;     // ¶}©l®É¨è
-clock_t TimeOut;  // ®É­­
+clock_t Tick;     // ï¿½}ï¿½lï¿½É¨ï¿½
+clock_t TimeOut;  // ï¿½É­ï¿½
 #endif
-MOV   BestMove; // ·j¥X¨Óªº³Ì¨ÎµÛªk
+MOV   BestMove; // ï¿½jï¿½Xï¿½Óªï¿½ï¿½Ì¨ÎµÛªk
 
 bool TimesUp() {
 #ifdef _WINDOWS
@@ -62,10 +62,10 @@ SCORE nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int
 			tn->position = B.Key;
 			tn->check = B.Check;
 		}
-		return -is_max * WIN;	
-	} 
+		return -is_max * WIN;
+	}
 	MOVLST lst;
-	
+
 	if(cut==depth || TimesUp() || B.MoveGen(lst)==0 ){
 		if(cut >= tn->search_depth){
 			tn->search_depth = cut;
@@ -74,31 +74,33 @@ SCORE nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int
 			tn->position = B.Key;
 			tn->check = B.Check;
 		}
-		return is_max* B.Eval();	
+		return is_max* B.Eval();
 	}
-	
-	
-	
+
+
+
 	for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);
 
-		SCORE t=  -nega_scout(N,-n,-get_max(alpha,m),depth,-is_max,cut+1);
-		if(t>m){
-			if(n==beta || depth < 3 || t>= beta){
+		SCORE t=  -nega_scout(N,-n,-get_max(alpha,m),depth,-is_max,cut+1); // null window search
+		if(t>m){ // if failed high
+			if(n==beta || depth-cut < 3 || t>= beta){
 				m = t;
 			}else{
-				m = -nega_scout(N,-beta,-t,depth,-is_max,cut+1);
+				m = -nega_scout(N,-beta,-t,depth,-is_max,cut+1); //research
 			}
-		}	
-		if(m>=beta){
+			BestMove = lst.mov[i];
+		}
+		if(m>=beta){ //cut off
 			tn->search_depth = cut;
 			tn->best_value = m;
 			tn->is_exact = false;
 			tn->position = B.Key;
 			tn->check = B.Check;
-			return m;	
-		} 
+			return m;
+		}
+		//if(get_max(alpha,m)!=alpha)
 		n=get_max(alpha,m)+1;
 	}
 	tn->search_depth = cut;
@@ -106,12 +108,12 @@ SCORE nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int
 	tn->is_exact = true;
 	tn->position = B.Key;
 	tn->check = B.Check;
-	
+
 	return m;
 }
 
 
-// ¤@­Ó­«¶q¤£­«½èªº¼f§½¨ç¼Æ
+// ï¿½@ï¿½Ó­ï¿½ï¿½qï¿½ï¿½ï¿½ï¿½ï¿½èªºï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 SCORE Eval(const BOARD &B) {
 	int cnt[2]={0,0};
 	for(POS p=0;p<32;p++){const CLR c=GetColor(B.fin[p]);if(c!=-1)cnt[c]++;}
@@ -120,8 +122,8 @@ SCORE Eval(const BOARD &B) {
 }
 
 
-// dep=²{¦b¦b²Ä´X¼h
-// cut=ÁÙ­n¦A¨«´X¼h
+// dep=ï¿½{ï¿½bï¿½bï¿½Ä´Xï¿½h
+// cut=ï¿½Ù­nï¿½Aï¿½ï¿½ï¿½Xï¿½h
 SCORE SearchMax(const BOARD &B,int dep,int cut) {
 	if(B.ChkLose())return -WIN;
 
@@ -164,13 +166,13 @@ MOV Play(const BOARD &B) {
 #endif
 	POS p; int c=0;
 
-	// ·s¹CÀ¸¡HÀH¾÷Â½¤l
+	// ï¿½sï¿½Cï¿½ï¿½ï¿½Hï¿½Hï¿½ï¿½Â½ï¿½l
 	if(B.who==-1){p=rand()%32;printf("%d\n",p);return MOV(p,p);}
 
-	// ­Y·j¥X¨Óªºµ²ªG·|¤ñ²{¦b¦n´N¥Î·j¥X¨Óªº¨«ªk
-	if(SearchMax(B,0,5)>Eval(B))return BestMove;
-
-	// §_«hÀH«KÂ½¤@­Ó¦a¤è ¦ý¤p¤ß¥i¯à¤w¸g¨S¦a¤èÂ½¤F
+	// ï¿½Yï¿½jï¿½Xï¿½Óªï¿½ï¿½ï¿½ï¿½Gï¿½|ï¿½ï¿½ï¿½{ï¿½bï¿½nï¿½Nï¿½Î·jï¿½Xï¿½Óªï¿½ï¿½ï¿½ï¿½k
+	//if(SearchMax(B,0,5)>Eval(B))return BestMove;
+	if(nega_scout(B,-INF,INF,6,1,0) > B.Eval()) return BestMove;
+	// ï¿½_ï¿½hï¿½Hï¿½KÂ½ï¿½@ï¿½Ó¦aï¿½ï¿½ ï¿½ï¿½ï¿½pï¿½ß¥iï¿½ï¿½ï¿½wï¿½gï¿½Sï¿½aï¿½ï¿½Â½ï¿½F
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
 	if(c==0)return BestMove;
 	c=rand()%c;
@@ -251,7 +253,7 @@ fflush(stdout);
 	B.Init(iCurrentPosition, iPieceCount, (color==2)?(-1):(int)color);
 
 	MOV m;
-	if(turn) // §Ú¥ý
+	if(turn) // ï¿½Ú¥ï¿½
 	{
 	    m = Play(B);
 	    sprintf(src, "%c%c",(m.st%4)+'a', m.st/4+'1');
@@ -267,7 +269,7 @@ fflush(stdout);
 	    m.ed = (mov[2]=='(')?m.st:(mov[3] - 'a' + (mov[4] - '1')*4);
 	    B.DoMove(m, chess2fin(mov[3]));
 	}
-	else // ¹ï¤è¥ý
+	else // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 	    protocol->recv(mov, remain_time);
 	    if( color == 2)

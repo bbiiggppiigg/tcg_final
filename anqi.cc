@@ -16,8 +16,8 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 static const char *nam[16]={
-	"å¸¥","ä»•","ç›¸","ç¡¨","å‚Œ","ç‚®","å…µ",
-	"å°‡","å£«","è±¡","è»Š","é¦¬","ç ²","å’",
+	"«Ó","¥K","¬Û","ÚÏ","ØX","¬¶","§L",
+	"±N","¤h","¶H","¨®","°¨","¯¥","¨ò",
 	"O"," "
 };
 
@@ -225,17 +225,17 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  è¼ªåˆ° ",stderr);
+			fputs("  ½ü¨ì ",stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("ç´…æ–¹",stderr);
+				fputs("¬õ¤è",stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("é»‘æ–¹",stderr);
+				fputs("¶Â¤è",stderr);
 			} else {
 				fputs("??",stderr);
 			}
@@ -243,7 +243,7 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  å°šæœªç¿»å‡º : ",stderr);
+			fputs("  ©|¥¼Â½¥X : ",stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);

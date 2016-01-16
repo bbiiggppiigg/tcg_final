@@ -16,9 +16,9 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 static const char *nam[16]={
-	"«Ó","¥K","¬Û","ÚÏ","ØX","¬¶","§L",
-	"±N","¤h","¶H","¨®","°¨","¯¥","¨ò",
-	"¢Ý","¡@"
+	"帥","仕","相","硨","傌","炮","兵",
+	"將","士","象","車","馬","砲","卒",
+	"O"," "
 };
 
 static const POS ADJ[32][4]={
@@ -51,7 +51,7 @@ bool ChkEats(FIN fa,FIN fb) {
 	const LVL la=GetLevel(fa);	// if cannon , always return true
 	if(la==LVL_C)return true ;
 
-	const LVL lb=GetLevel(fb); 
+	const LVL lb=GetLevel(fb);
 	if(la==LVL_K)return lb!=LVL_P;  // if fa is king, eat anything not pawn
 	if(la==LVL_P)return lb==LVL_P||lb==LVL_K; // if fb is pawn, eat pawn and king only
 
@@ -225,25 +225,25 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ½ü¨ì ",stderr);
+			fputs("  輪到 ",stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("¬õ¤è",stderr);
+				fputs("紅方",stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("¶Â¤è",stderr);
+				fputs("黑方",stderr);
 			} else {
-				fputs("¡H¡H",stderr);
+				fputs("??",stderr);
 			}
 		} else if(i==1) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ©|¥¼Â½¥X¡G",stderr);
+			fputs("  尚未翻出 : ",stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);
@@ -264,7 +264,7 @@ int BOARD::MoveGen(MOVLST &lst) const {
 	for(POS p=0;p<32;p++) {
 		const FIN pf=fin[p];
 		if(GetColor(pf)!=who)continue;
-		
+
 		const LVL pl=GetLevel(pf);
 
 		if(pl!=LVL_C){
@@ -283,24 +283,24 @@ int BOARD::MoveGen(MOVLST &lst) const {
 			for(int z=0;z<4;z++) {
 				int c=0;
 				POS q = ADJ[p][z];
-				
+
 				if(fin[q] ==FIN_E)
 					lst.mov[lst.num++] = MOV(p,q,false);
 
 				for(;(q=ADJ[q][z])!=-1;) { // check q = not boundary
 					const FIN qf=fin[q];
-			
+
 					if(qf==FIN_E||++c!=2) // count the second non_empty slot
 						continue;
-			
+
 					if(qf!=FIN_X &&	GetColor(qf)!=who)
 						lst.mov[lst.num++]=MOV(p,q,true);
 					break;
 				}
 			}
 		}
-			
-		
+
+
 	}
 	return lst.num;
 }
@@ -357,7 +357,7 @@ void BOARD::Move(MOV m) {
 		fin[m.ed]=fin[m.st];
 		fin[m.st]=FIN_E;
 		who^=1;
-		
+
 		FIN st = fin[m.st];
 		FIN ed = fin[m.ed];
 		if(ed != FIN_E){
@@ -368,7 +368,7 @@ void BOARD::Move(MOV m) {
 		Check ^= check_table[m.st][st];
 		Key ^= zobrist_table[m.ed][st];
 		Check ^= check_table[m.ed][st];
-		
+
 
 	} else {
 
@@ -397,5 +397,5 @@ SCORE BOARD::Eval() const {
 	for(POS p=0;p<32;p++){const CLR c=GetColor(fin[p]);if(c!=-1)cnt2[c]++;}
 	for(int i=0;i<14;i++)cnt2[GetColor(FIN(i))]+=cnt[i];
 	return cnt[who]-cnt2[who^1];
-	
+
 }

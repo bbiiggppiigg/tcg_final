@@ -1,5 +1,5 @@
 all:
-	$(CXX) -o search.exe main.cc anqi.cc ClientSocket.cpp Protocol.cpp -static =s -lws2_32
+	$(CXX) -o search.exe main.cc anqi.cc ClientSocket.cpp Protocol.cpp 
 LDFLAGS=-static -s -lws2_32
 .PHONY:	clean
 search.exe:	main.cc anqi.cc ClientSocket.cpp Protocol.cpp

@@ -64,18 +64,17 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 	}
 
 	if(B.ChkLose()){ // update value
-		if(cut >= tn->search_depth){
-			tn->set_node(B.Key,B.Check,cut,-is_max*WIN,MOV(),true);
-		}
-		return make_pair(-is_max * WIN,MOV());
+			tn->set_node(B.Key,B.Check,cut,-WIN,MOV(),true);
+		return make_pair(-WIN,MOV());
 	}
+
 	MOVLST lst;
 
 	if(cut==depth || TimesUp() || B.MoveGen(lst)==0 ){
 		if(cut >= tn->search_depth){
 			tn->set_node(B.Key,B.Check,cut,B.Eval(),MOV(),true);
 		}
-		return make_pair(is_max* B.Eval(),MOV());
+		return make_pair( B.Eval(),MOV());
 	}
 
 	for (int i = 0 ; i< lst.num;i++){
@@ -109,13 +108,6 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 }
 
 
-// �@�ӭ��q�����誺�f������
-SCORE Eval(const BOARD &B) {
-	int cnt[2]={0,0};
-	for(POS p=0;p<32;p++){const CLR c=GetColor(B.fin[p]);if(c!=-1)cnt[c]++;}
-	for(int i=0;i<14;i++)cnt[GetColor(FIN(i))]+=B.cnt[i];
-	return cnt[B.who]-cnt[B.who^1];
-}
 
 
 
@@ -230,7 +222,7 @@ fflush(stdout);
 	    protocol->send(src, dst);
 	    protocol->recv(mov, remain_time);
 	    if( color == 2)
-		color = protocol->get_color(mov);
+				color = protocol->get_color(mov);
 	    B.who = color;
 	    B.DoMove(m, chess2fin(mov[3]));
 	    protocol->recv(mov, remain_time);

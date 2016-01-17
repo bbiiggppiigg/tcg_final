@@ -12,14 +12,10 @@
 #include<cstdlib>
 #include<cstring>
 #include"anqi.hh"
-
+#include "chinese.h"
 static const char *tbl="KGMRNCPkgmrncpX-";
 
-static const char *nam[16]={
-	"��","�K","��","��","�X","��","�L",
-	"�N","�h","�H","��","��","��","��",
-	"��","�@"
-};
+extern const char *nam[16];
 
 static const POS ADJ[32][4]={
 	{ 1,-1,-1, 4},{ 2,-1, 0, 5},{ 3,-1, 1, 6},{-1,-1, 2, 7},
@@ -313,13 +309,18 @@ bool BOARD::ChkLose() const {
 	bool fDark=false;
 	for(int i=0;i<14;i++) {
 		if(cnt[i]==0)continue;
-		if(GetColor(FIN(i))==who)return false;
-		fDark=true;
+		if(GetColor(FIN(i))==who)return false; // if i have at least one piece, not lost
+		fDark=true;	// at least one dark
 	}
 
 	bool fLive=false;
-	for(POS p=0;p<32;p++)if(GetColor(fin[p])==who){fLive=true;break;}
-	if(!fLive)return true;
+	for(POS p=0;p<32;p++)
+		if(GetColor(fin[p])==who){	// if at least one alive return true
+			fLive=true;
+			break;
+		}
+
+	if(!fLive)return true;	// if no alive piece , return true
 
 	MOVLST lst;
 	return !fDark&&MoveGen(lst)==0;

@@ -16,8 +16,8 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 static const char *nam[16]={
-	"«Ó","¥K","¬Û","ÚÏ","ØX","¬¶","§L",
-	"±N","¤h","¶H","¨®","°¨","¯¥","¨ò",
+	"ï¿½ï¿½","ï¿½K","ï¿½ï¿½","ï¿½ï¿½","ï¿½X","ï¿½ï¿½","ï¿½L",
+	"ï¿½N","ï¿½h","ï¿½H","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½",
 	"O"," "
 };
 
@@ -204,7 +204,7 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 		SetConsoleTextAttribute(hErr,8);
 #endif
-		for(int j=0;j<4;j++)fprintf(stderr,"[%02d]",mkpos(i,j));
+		for(int j=0;j<4;j++)fprintf(stderr,"[%02d]",mkpos(7-i,j));
 		if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,12);
@@ -214,28 +214,28 @@ void BOARD::Display() const {
 		}
 		fputc('\n',stderr);
 		for(int j=0;j<4;j++) {
-			const FIN f=fin[mkpos(i,j)];
+			const FIN f=fin[mkpos(7-i,j)];
 			const CLR c=GetColor(f);
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,(c!=-1?12-c*2:7));
 #endif
-			fprintf(stderr," %s ",nam[fin[mkpos(i,j)]]);
+			fprintf(stderr," %s ",nam[fin[mkpos(7-i,j)]]);
 		}
 		if(i==0) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ½ü¨ì ",stderr);
+			fputs("  ï¿½ï¿½ï¿½ï¿½ ",stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("¬õ¤è",stderr);
+				fputs("ï¿½ï¿½ï¿½ï¿½",stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("¶Â¤è",stderr);
+				fputs("ï¿½Â¤ï¿½",stderr);
 			} else {
 				fputs("??",stderr);
 			}
@@ -243,7 +243,7 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ©|¥¼Â½¥X : ",stderr);
+			fputs("  ï¿½|ï¿½ï¿½Â½ï¿½X : ",stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);

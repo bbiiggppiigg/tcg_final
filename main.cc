@@ -14,6 +14,7 @@
 #include "trans_table.h"
 #include"Protocol.h"
 #include"ClientSocket.h"
+#include <iostream>
 //#define MAX_HASH 999989
 using namespace std;
 #ifdef _WINDOWS
@@ -134,7 +135,12 @@ MOV Play(const BOARD &B) {
 	// �Y�j�X�Ӫ����G�|���{�b�n�N�ηj�X�Ӫ����k
 	//if(SearchMax(B,0,5)>Eval(B))return BestMove;
 	pair<SCORE,MOV> tmp_pair = nega_scout(B,-INF,INF,6,1,0);
-	if( tmp_pair.first> B.Eval()) return tmp_pair.second;
+	if( tmp_pair.first> B.Eval()){
+		cerr << "find best move with value "<< (tmp_pair.first) << " move : " << (tmp_pair.second.st)<<" "<<(tmp_pair.second.ed) << endl;
+		return tmp_pair.second;
+	}else{
+		cerr << "current best value "<<B.Eval()<< " is greater than nega_scout value "<< (tmp_pair.first) <<", fliping " << endl;
+	}
 	// �_�h�H�K½�@�Ӧa�� ���p�ߥi���w�g�S�a��½�F
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
 	if(c==0)return BestMove;

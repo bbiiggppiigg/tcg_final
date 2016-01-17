@@ -9,19 +9,18 @@
 \*****************************************************************************/
 #include<cstdio>
 #include<cstdlib>
+#include <utility>
 #include"anqi.hh"
+#include "trans_table.h"
 #include"Protocol.h"
 #include"ClientSocket.h"
-#define MAX_HASH 999989
-//#define MAX_HASH 99999989
-trans_node trans_table [MAX_HASH];
+//#define MAX_HASH 999989
+using namespace std;
 #ifdef _WINDOWS
 #include<windows.h>
 #else
 #include<ctime>
 #endif
-SCORE SearchMax(const BOARD&,int,int);
-SCORE SearchMin(const BOARD&,int,int);
 
 #ifdef _WINDOWS
 DWORD Tick;     // �}�l�ɨ�
@@ -41,76 +40,71 @@ bool TimesUp() {
 }
 
 
-SCORE nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int cut){
-	trans_node *tn = &trans_table[B.Key%MAX_HASH];
+std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int cut){
+	trans_node *tn = trans_table[B.Key%MAX_HASH];
 	SCORE m = -INF;
 	SCORE n  = beta;
+	SCORE t;
+	pair<SCORE,MOV> tmp_pair ;
+	MOV RET_MOVE;
 
-	if(tn->position == B.Key && tn->check == B.Check){
-		if(cut <=tn->search_depth ){
-			if(tn->is_exact){
-				return tn->best_value;
-			}else{
-				m = tn->best_value;
+	if(tn!=NULL){ //hash hit
+		if(tn->position == B.Key && tn->check == B.Check){
+			if(cut <=tn->search_depth ){
+				if(tn->is_exact){
+					return make_pair(tn->best_value,tn->best_move);
+				}else{
+					m = tn->best_value;
+				}
 			}
 		}
+	}else{
+		tn = (trans_node *) malloc (sizeof(trans_node));
 	}
-	if(B.ChkLose()){
+
+	if(B.ChkLose()){ // update value
 		if(cut >= tn->search_depth){
-			tn->search_depth = cut;
-			tn->best_value = -is_max * WIN;
-			tn->is_exact = true;
-			tn->position = B.Key;
-			tn->check = B.Check;
+			tn->set_node(B.Key,B.Check,cut,-is_max*WIN,MOV(),true);
 		}
-		return -is_max * WIN;
+		return make_pair(-is_max * WIN,MOV());
 	}
 	MOVLST lst;
 
 	if(cut==depth || TimesUp() || B.MoveGen(lst)==0 ){
 		if(cut >= tn->search_depth){
-			tn->search_depth = cut;
-			tn->best_value = -is_max * WIN;
-			tn->is_exact = true;
-			tn->position = B.Key;
-			tn->check = B.Check;
+			tn->set_node(B.Key,B.Check,cut,B.Eval(),MOV(),true);
 		}
-		return is_max* B.Eval();
+		return make_pair(is_max* B.Eval(),MOV());
 	}
-
-
 
 	for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);
 
-		SCORE t=  -nega_scout(N,-n,-get_max(alpha,m),depth,-is_max,cut+1); // null window search
+		tmp_pair =  nega_scout(N,-n,-get_max(alpha,m),depth,-is_max,cut+1); // null window search
+		t = -tmp_pair.first;
 		if(t>m){ // if failed high
 			if(n==beta || depth-cut < 3 || t>= beta){
 				m = t;
 			}else{
-				m = -nega_scout(N,-beta,-t,depth,-is_max,cut+1); //research
+				tmp_pair  = nega_scout(N,-beta,-t,depth,-is_max,cut+1); //research
+				m = -tmp_pair.first;
 			}
-			BestMove = lst.mov[i];
+			RET_MOVE = lst.mov[i];
 		}
 		if(m>=beta){ //cut off
 			tn->search_depth = cut;
 			tn->best_value = m;
-			tn->is_exact = false;
-			tn->position = B.Key;
-			tn->check = B.Check;
-			return m;
+
+			tn->set_node(B.Key,B.Check,cut,m,lst.mov[i],false);
+			return make_pair(m,RET_MOVE);
 		}
 		//if(get_max(alpha,m)!=alpha)
 		n=get_max(alpha,m)+1;
 	}
-	tn->search_depth = cut;
-	tn->best_value = m;
-	tn->is_exact = true;
-	tn->position = B.Key;
-	tn->check = B.Check;
 
-	return m;
+	tn->set_node(B.Key,B.Check,cut,m,RET_MOVE,true);
+	return make_pair(m,RET_MOVE);
 }
 
 
@@ -123,39 +117,6 @@ SCORE Eval(const BOARD &B) {
 }
 
 
-// dep=�{�b�b�ĴX�h
-// cut=�٭n�A���X�h
-SCORE SearchMax(const BOARD &B,int dep,int cut) {
-	if(B.ChkLose())return -WIN;
-
-	MOVLST lst;
-	if(cut==0||TimesUp()||B.MoveGen(lst)==0)return +Eval(B);
-
-	SCORE ret=-INF;
-	for(int i=0;i<lst.num;i++) {
-		BOARD N(B);
-		N.Move(lst.mov[i]);
-		const SCORE tmp=SearchMin(N,dep+1,cut-1);
-		if(tmp>ret){ret=tmp;if(dep==0)BestMove=lst.mov[i];}
-	}
-	return ret;
-}
-
-SCORE SearchMin(const BOARD &B,int dep,int cut) {
-	if(B.ChkLose())return +WIN;
-
-	MOVLST lst;
-	if(cut==0||TimesUp()||B.MoveGen(lst)==0)return -Eval(B);
-
-	SCORE ret=+INF;
-	for(int i=0;i<lst.num;i++) {
-		BOARD N(B);
-		N.Move(lst.mov[i]);
-		const SCORE tmp=SearchMax(N,dep+1,cut-1);
-		if(tmp<ret){ret=tmp;}
-	}
-	return ret;
-}
 
 MOV Play(const BOARD &B) {
 #ifdef _WINDOWS
@@ -172,7 +133,8 @@ MOV Play(const BOARD &B) {
 
 	// �Y�j�X�Ӫ����G�|���{�b�n�N�ηj�X�Ӫ����k
 	//if(SearchMax(B,0,5)>Eval(B))return BestMove;
-	if(nega_scout(B,-INF,INF,6,1,0) > B.Eval()) return BestMove;
+	pair<SCORE,MOV> tmp_pair = nega_scout(B,-INF,INF,6,1,0);
+	if( tmp_pair.first> B.Eval()) return tmp_pair.second;
 	// �_�h�H�K½�@�Ӧa�� ���p�ߥi���w�g�S�a��½�F
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
 	if(c==0)return BestMove;

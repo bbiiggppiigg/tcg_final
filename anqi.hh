@@ -55,26 +55,12 @@ typedef struct MOV {
 	POS st; // °_ÂI
 	POS ed; // ²×ÂI // ­Y ed==st ªí¥Ü¬OÂ½¤l
 	bool is_eat_move;
-	MOV() {}
+	MOV() {st= ed=-1;}
 	MOV(POS s,POS e):st(s),ed(e) {}
 	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){};
 	bool operator==(const MOV &x) const {return st==x.st&&ed==x.ed;}
 	MOV operator=(const MOV &x) {st=x.st;ed=x.ed;return MOV(x.st, x.ed);}
 }MOV;
-
-typedef struct trans_node{
-	U32 position;
-	U32 check;
-	int search_depth;
-	U32 best_value;
-	MOV best_move;
-	bool is_exact;
-	trans_node(){
-		position = check = best_value =0 ;
-		search_depth = 0;
-		is_exact= false;
-	}
-}node;
 
 
 typedef struct MOVLST {
@@ -107,5 +93,4 @@ CLR  GetColor(FIN);    // ºâ¥X´Ñ¤lªºÃC¦â
 LVL  GetLevel(FIN);    // ºâ¥X´Ñ¤lªº¶¥¯Å
 bool ChkEats(FIN,FIN); // §PÂ_²Ä¤@­Ó´Ñ¤l¯à§_¦Y²Ä¤G­Ó´Ñ¤l
 void Output (MOV);     // ±Nµª®×¶Çµ¹ GUI
-extern trans_node trans_table [999989];
 #endif

@@ -143,7 +143,7 @@ MOV Play(const BOARD &B) {
 	}
 	// �_�h�H�K½�@�Ӧa�� ���p�ߥi���w�g�S�a��½�F
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
-	if(c==0)return BestMove;
+	if(c==0)return tmp_pair.second;
 	c=rand()%c;
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X&&--c<0)break;
 	return MOV(p,p);

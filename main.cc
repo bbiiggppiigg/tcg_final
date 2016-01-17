@@ -126,7 +126,7 @@ MOV Play(const BOARD &B) {
 
 	// �Y�j�X�Ӫ����G�|���{�b�n�N�ηj�X�Ӫ����k
 	//if(SearchMax(B,0,5)>Eval(B))return BestMove;
-	pair<SCORE,MOV> tmp_pair = nega_scout(B,-INF,INF,6,1,0);
+	pair<SCORE,MOV> tmp_pair = nega_scout(B,-INF,INF,10,1,0);
 	if( tmp_pair.first> B.Eval()){
 		cerr << "find best move with value "<< (tmp_pair.first) << " move : " << (tmp_pair.second.st)<<" "<<(tmp_pair.second.ed) << endl;
 		return tmp_pair.second;

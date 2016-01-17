@@ -16,9 +16,9 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 static const char *nam[16]={
-	"«Ó","¥K","¬Û","ÚÏ","ØX","¬¶","§L",
-	"±N","¤h","¶H","¨®","°¨","¯¥","¨ò",
-	"¢Ý","¡@"
+	"ï¿½ï¿½","ï¿½K","ï¿½ï¿½","ï¿½ï¿½","ï¿½X","ï¿½ï¿½","ï¿½L",
+	"ï¿½N","ï¿½h","ï¿½H","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½",
+	"ï¿½ï¿½","ï¿½@"
 };
 
 static const POS ADJ[32][4]={
@@ -225,25 +225,25 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ½ü¨ì ",stderr);
+			fputs("  ï¿½ï¿½ï¿½ï¿½ ",stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("¬õ¤è",stderr);
+				fputs("ï¿½ï¿½ï¿½ï¿½",stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("¶Â¤è",stderr);
+				fputs("ï¿½Â¤ï¿½",stderr);
 			} else {
-				fputs("¡H¡H",stderr);
+				fputs("ï¿½Hï¿½H",stderr);
 			}
 		} else if(i==1) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ©|¥¼Â½¥X¡G",stderr);
+			fputs("  ï¿½|ï¿½ï¿½Â½ï¿½Xï¿½G",stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);
@@ -263,7 +263,7 @@ int BOARD::MoveGen(MOVLST &lst) const {
 	lst.num=0;
 	for(POS p=0;p<32;p++) {
 		const FIN pf=fin[p];
-		if(GetColor(pf)!=who)continue;
+		if(GetColor(pf)!=who)continue; // if not own piece , continue
 
 		const LVL pl=GetLevel(pf);
 
@@ -283,11 +283,12 @@ int BOARD::MoveGen(MOVLST &lst) const {
 			for(int z=0;z<4;z++) {
 				int c=0;
 				POS q = ADJ[p][z];
-
+				if(q==-1)
+					break;
 				if(fin[q] ==FIN_E)
 					lst.mov[lst.num++] = MOV(p,q,false);
 
-				for(;(q=ADJ[q][z])!=-1;) { // check q = not boundary
+				do{
 					const FIN qf=fin[q];
 
 					if(qf==FIN_E||++c!=2) // count the second non_empty slot
@@ -296,7 +297,8 @@ int BOARD::MoveGen(MOVLST &lst) const {
 					if(qf!=FIN_X &&	GetColor(qf)!=who)
 						lst.mov[lst.num++]=MOV(p,q,true);
 					break;
-				}
+				}while((q=ADJ[q][z])!=-1);
+
 			}
 		}
 

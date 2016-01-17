@@ -398,6 +398,6 @@ SCORE BOARD::Eval() const {
 	int cnt2[2]={0,0};
 	for(POS p=0;p<32;p++){const CLR c=GetColor(fin[p]);if(c!=-1)cnt2[c]++;}
 	for(int i=0;i<14;i++)cnt2[GetColor(FIN(i))]+=cnt[i];
-	return cnt[who]-cnt2[who^1];
+	return cnt2[who]-cnt2[who^1];
 
 }

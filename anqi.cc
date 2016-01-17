@@ -16,9 +16,9 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 static const char *nam[16]={
-	"ï¿½ï¿½","ï¿½K","ï¿½ï¿½","ï¿½ï¿½","ï¿½X","ï¿½ï¿½","ï¿½L",
-	"ï¿½N","ï¿½h","ï¿½H","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½","ï¿½ï¿½",
-	"O"," "
+	"«Ó","¥K","¬Û","ÚÏ","ØX","¬¶","§L",
+	"±N","¤h","¶H","¨®","°¨","¯¥","¨ò",
+	"¢Ý","¡@"
 };
 
 static const POS ADJ[32][4]={
@@ -225,25 +225,25 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ï¿½ï¿½ï¿½ï¿½ ",stderr);
+			fputs("  ½ü¨ì ",stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("ï¿½ï¿½ï¿½ï¿½",stderr);
+				fputs("¬õ¤è",stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("ï¿½Â¤ï¿½",stderr);
+				fputs("¶Â¤è",stderr);
 			} else {
-				fputs("??",stderr);
+				fputs("¡H¡H",stderr);
 			}
 		} else if(i==1) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ï¿½|ï¿½ï¿½Â½ï¿½X : ",stderr);
+			fputs("  ©|¥¼Â½¥X¡G",stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);

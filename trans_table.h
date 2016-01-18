@@ -1,6 +1,7 @@
 #ifndef TRANS_TABLE
 #define TRANS_TABLE
-#define MAX_HASH 99999989
+#define MAX_HASH 999983
+//#define MAX_HASH 9999989
 
 
 typedef struct trans_node{
@@ -26,5 +27,6 @@ typedef struct trans_node{
 }trans_node;
 
 trans_node *trans_table [MAX_HASH];
+
 
 #endif

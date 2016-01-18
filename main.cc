@@ -39,7 +39,17 @@ bool TimesUp() {
 	return clock() - Tick > TimeOut;
 #endif
 }
-
+void init_table(){
+	for (int i =0 ; i < MAX_HASH ; i++){
+		if(trans_table[i]!=NULL)
+		{
+			cerr<<"Error Trans Table Initialization"<<i<<endl;  
+			exit(1);
+		}
+	}
+	//cerr<<"Auto Initilized"<<endl;
+	//exit(1);
+}
 int max_length;
 std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int cut){
 	trans_node *tn = trans_table[B.Key%MAX_HASH];
@@ -61,6 +71,7 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 					return make_pair(tn->best_value,tn->best_move);
 				}else{
 					m = tn->best_value;
+					RET_MOVE  = tn->best_move;
 				}
 			}
 		}
@@ -194,6 +205,7 @@ FIN chess2fin(char chess) {
 }
 
 int main(int argc, char* argv[]) {
+init_table();
 printf("%lu\n",sizeof(trans_node));
 fflush(stdout);
 #ifdef _WINDOWS

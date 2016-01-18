@@ -7,8 +7,8 @@ N=3亿，Relese时此程序明显落后
 #include <time.h> 
 #include <string.h> 
 #include <stdlib.h> 
-#define PRIME_LIM 10000000 
-#define N 100000000
+#define PRIME_LIM 1000000
+#define N 1000000
 int primes[PRIME_LIM] = {0}; 
 int flags[N/96 + 1] = {0}; 
 int get_prime() 

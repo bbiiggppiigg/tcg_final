@@ -72,14 +72,15 @@ typedef struct BOARD {
 	CLR who;     // ²{¦b½ü¨ì¨º¤@¤è¤U
 	FIN fin[32]; // ¦U­Ó¦ì¸m¤W­±Â\¤FÔ£
 	int cnt[14]; // ¦UºØ´Ñ¤lªº¥¼Â½¶}¼Æ¶q
-	U32 Key;
-	U32 Check;
+	U32 key;
+	U32 check;
 	void NewGame();              // ¶}·s¹CÀ¸
 	int  LoadGame(const char*);  // ¸ü¤J¹CÀ¸¨Ã¶Ç¦^®É­­(³æ¦ì:¬í)
 	void Display() const;        // Åã¥Ü¨ì stderr ¤W
 	int  MoveGen(MOVLST&) const; // ¦C¥X©Ò¦³¨«ªk(¨«¤l+¦Y¤l,¤£¥]¬AÂ½¤l)
 	                             // ¦^¶Ç¨«ªk¼Æ¶q
 	bool ChkLose() const;        // ÀË¬d·í«eª±®a(who)¬O§_¿é¤F
+	bool ChkWin() const;
 	bool ChkValid(MOV) const;    // ÀË¬d¬O§_¬°¦Xªk¨«ªk
 	void Flip(POS,FIN=FIN_X);    // Â½¤l
 	void Move(MOV);              // ²¾°Ê or ¦Y¤l

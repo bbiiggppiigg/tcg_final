@@ -22,7 +22,7 @@ using namespace std;
 #else
 #include<ctime>
 #endif
-
+int max_length;
 #ifdef _WINDOWS
 DWORD Tick;     // �}�l�ɨ�
 int   TimeOut;  // �ɭ�
@@ -43,96 +43,108 @@ void init_table(){
 	for (int i =0 ; i < MAX_HASH ; i++){
 		if(trans_table[i]!=NULL)
 		{
-			cerr<<"Error Trans Table Initialization"<<i<<endl;  
+			cerr<<"Error Trans Table Initialization"<<i<<endl;
 			exit(1);
 		}
 	}
-	//cerr<<"Auto Initilized"<<endl;
-	//exit(1);
 }
-int max_length;
-std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int cut){
-	trans_node *tn = trans_table[B.Key%MAX_HASH];
-	SCORE m = -INF;
-	SCORE n  = beta;
-	SCORE t;
-	pair<SCORE,MOV> tmp_pair ;
-	MOV RET_MOVE ;
-	if(cut > max_length)
-	{
-		max_length = cut;
-		cerr<<"New Depth : "<<cut<<endl;
-	}
-	if(tn!=NULL){ //hash hit
-	//	cerr << " Hash Hit "<<endl;
-		if(tn->position == B.Key && tn->check == B.Check){
-			if(cut <=tn->search_depth ){
-				if(tn->is_exact){
-					return make_pair(tn->best_value,tn->best_move);
+
+SCORE nega_scout2(const BOARD & B,int alpha , int beta, int depth , int cut){
+		MOVLST lst;
+		SCORE t;
+		SCORE n = beta;
+		SCORE m = -INF;
+		trans_node *tn = trans_table[B.key%MAX_HASH];
+
+		if(tn!=NULL){ //not null
+			if(B.key == tn->key && B.check == tn->check){ // hash hit
+				if(tn->is_exact && cut <= tn->search_depth){
+							return tn->best_value;
 				}else{
-					m = tn->best_value;
-					RET_MOVE  = tn->best_move;
+					m  =  tn->best_value;
+				}
+			}else{ //Colllision will be replaced automatically
+
+			}
+		}else{ // not initialized yet
+			tn = (trans_node *) malloc (sizeof(trans_node));
+		}
+
+
+
+
+		if(cut > max_length)
+		{
+			max_length = cut;
+			cerr<<"New Depth : "<<cut<<endl;
+		}
+
+		if(B.ChkLose()){
+			tn->set_node(B.key,B.check,cut,-WIN,MOV(),true);
+			return -WIN;
+		}
+		if(B.ChkWin()){
+			tn->set_node(B.key,B.check,cut,WIN,MOV(),true);
+			return WIN;
+		}
+		if(cut==depth || TimesUp() ||B.MoveGen(lst)==0){
+			tn->set_node(B.key,B.check,cut,B.Eval(),MOV(),true);
+			return B.Eval();
+		}
+		for (int i =0; i <lst.num ;i++){
+			BOARD N(B);
+			N.Move(lst.mov[i]);
+			SCORE t = -nega_scout2(N,-n,-get_max(alpha,m),depth,cut+1);
+			if(t>m){
+				if(n==beta || depth -cut <3 || t >= beta){
+					m = t;
+				}else{
+					m = -nega_scout2(N,-beta,-t,depth,cut+1);
 				}
 			}
+			if(m>=beta){
+				tn->set_node(B.key,B.check,cut,m,lst.mov[i],false);
+				return m;
+			}
+			n = get_max(alpha,m)+1;
 		}
-	//	cerr<<" End Hastable Update" << endl;
-	}else{
-	//	cerr << " Creating Hash Entry "<<endl;
-		tn = (trans_node *) malloc (sizeof(trans_node));
-	//	cerr << " End Creating Hash Entry "<<endl;
-	}
-
-	if(B.ChkLose()){ // update value
-	//	cerr <<"Lost , Updating Hash Entry" <<endl;
-		tn->set_node(B.Key,B.Check,cut,-WIN,MOV(),true);
-	//	cerr <<" Lost , End updating Hash Entry"<<endl;
-		return make_pair(-WIN,MOV());
-	}
-
+		tn->set_node(B.key,B.check,cut,m,MOV(),true);
+		return m;
+}
+SCORE Search_Max(const BOARD & B,int depth){
 	MOVLST lst;
+	SCORE alpha = -INF;
+	SCORE beta = INF;
+	SCORE n = beta;
+	SCORE m = -INF;
 
-	if(cut==depth || TimesUp() || B.MoveGen(lst)==0 ){
-	//	cerr <<"At length or TimesUp or Something , Update Hash Entry"<<endl;
-		if(cut >= tn->search_depth){
-			tn->set_node(B.Key,B.Check,cut,B.Eval(),MOV(),true);
-		}
-	//	cerr <<"At length or TimesUp or Something , End Update Hash Entry"<<endl;
-		return make_pair( B.Eval(),MOV());
+	int cut =0 ;
+	B.MoveGen(lst);
+	if(lst.num ==0 ){
+		BestMove =  MOV();
 	}
-
 	for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);
-
-		tmp_pair =  nega_scout(N,-n,-get_max(alpha,m),depth,-is_max,cut+1); // null window search
-		t = -tmp_pair.first;
+		SCORE t =  -nega_scout2(N,-n,-get_max(alpha,m),depth,cut+1); // null window search
 		if(t>m){ // if failed high
 			if(n==beta || depth-cut < 3 || t>= beta){
 				m = t;
 			}else{
-				tmp_pair  = nega_scout(N,-beta,-t,depth,-is_max,cut+1); //research
-				m = -tmp_pair.first;
+				m  = -nega_scout2(N,-beta,-t,depth,cut+1); //research
 			}
-			RET_MOVE = lst.mov[i];
+			BestMove = lst.mov[i];
 		}
 		if(m>=beta){ //cut off
-			tn->search_depth = cut;
-			tn->best_value = m;
-
-			tn->set_node(B.Key,B.Check,cut,m,lst.mov[i],false);
-			return make_pair(m,RET_MOVE);
+			BestMove = lst.mov[i];
+			return m;
 		}
-		//if(get_max(alpha,m)!=alpha)
 		n=get_max(alpha,m)+1;
 	}
-	//cerr << "At End , Updating Hash Entry , No cut"<<endl;
-	tn->set_node(B.Key,B.Check,cut,m,RET_MOVE,true);
-	//cerr << "At End , End Updating Hash Entry , No cut"<<endl;
-	return make_pair(m,RET_MOVE);
+
+	return m;
+
 }
-
-
-
 
 
 MOV Play(const BOARD &B) {
@@ -145,21 +157,28 @@ MOV Play(const BOARD &B) {
 #endif
 	POS p; int c=0;
 	max_length = 0 ;
-	// �s�C���H�H��½�l
+	int search_depth = 12;
+
 	if(B.who==-1){p=rand()%32;printf("%d\n",p);return MOV(p,p);}
 
-	// �Y�j�X�Ӫ����G�|���{�b�n�N�ηj�X�Ӫ����k
-	//if(SearchMax(B,0,5)>Eval(B))return BestMove;
-	pair<SCORE,MOV> tmp_pair = nega_scout(B,-INF,INF,10,1,0);
-	if( tmp_pair.first> B.Eval()){
-		cerr << "find best move with value "<< (tmp_pair.first) << " move : " << (tmp_pair.second.st)<<" "<<(tmp_pair.second.ed) << endl;
-		return tmp_pair.second;
-	}else{
-		cerr << "current best value "<<B.Eval()<< " is greater than nega_scout value "<< (tmp_pair.first) <<", fliping " << endl;
+ 	SCORE nega  = Search_Max(B,search_depth) ;
+	if(BestMove.st !=-1){
+		if(nega>B.Eval()){
+				cerr << "find best move with value "<< nega << " move : " << (BestMove.st)<<" "<<(BestMove.ed) << endl;
+				return BestMove;
+		}else{
+				cerr << "current best value "<<B.Eval()<< " is no less than nega_scout value "<< nega <<", fliping " << endl;
+		}
 	}
-	// �_�h�H�K½�@�Ӧa�� ���p�ߥi���w�g�S�a��½�F
+
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
-	if(c==0)return tmp_pair.second;
+
+	if(c==0){
+		if(BestMove.st!=-1)
+			return BestMove;
+		else
+			cerr <<"GGGGGGGGG"<<endl;
+	}
 	c=rand()%c;
 	for(p=0;p<32;p++)if(B.fin[p]==FIN_X&&--c<0)break;
 	return MOV(p,p);
@@ -217,7 +236,9 @@ fflush(stdout);
 	BOARD B;
 	if (argc!=3) {
 	    TimeOut=(B.LoadGame("board.txt")-3)*1000;
-	    if(!B.ChkLose())Output(Play(B));
+			B.Display();
+			if(!B.ChkLose())Output(Play(B));
+			B.Display();
 	    return 0;
 	}
 	Protocol *protocol;

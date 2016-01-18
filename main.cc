@@ -157,7 +157,7 @@ MOV Play(const BOARD &B) {
 #endif
 	POS p; int c=0;
 	max_length = 0 ;
-	int search_depth = 12;
+	int search_depth = 8;
 
 	if(B.who==-1){p=rand()%32;printf("%d\n",p);return MOV(p,p);}
 

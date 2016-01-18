@@ -16,7 +16,7 @@
 static const char *tbl="KGMRNCPkgmrncpX-";
 
 extern const char *nam[16];
-
+extern const char * strings[5];
 static const POS ADJ[32][4]={
 	{ 1,-1,-1, 4},{ 2,-1, 0, 5},{ 3,-1, 1, 6},{-1,-1, 2, 7},
 	{ 5, 0,-1, 8},{ 6, 1, 4, 9},{ 7, 2, 5,10},{-1, 3, 6,11},
@@ -221,25 +221,25 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  ���� ",stderr);
+			fputs(strings[0],stderr);
 			if(who==0) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs("����",stderr);
+				fputs(strings[1],stderr);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs("�¤�",stderr);
+				fputs(strings[2],stderr);
 			} else {
-				fputs("�H�H",stderr);
+				fputs(strings[3],stderr);
 			}
 		} else if(i==1) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,7);
 #endif
-			fputs("  �|��½�X�G",stderr);
+			fputs(strings[4],stderr);
 		} else if(i==2) {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,10);

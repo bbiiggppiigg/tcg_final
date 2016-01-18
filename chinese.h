@@ -3,3 +3,6 @@ static const char *nam[16]={
 	"將","士","象","車","馬","砲","卒",
 	"Ｏ","　"
 };
+static const char * strings[5]{
+"  輪到 ","紅方","黑方","？？","  尚未翻出："
+};

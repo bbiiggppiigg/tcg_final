@@ -157,11 +157,16 @@ MOV Play(const BOARD &B) {
 #endif
 	POS p; int c=0;
 	max_length = 0 ;
-	int search_depth = 8;
+	int search_depth = 12;
 
 	if(B.who==-1){p=rand()%32;printf("%d\n",p);return MOV(p,p);}
 
- 	SCORE nega  = Search_Max(B,search_depth) ;
+ 	SCORE nega;
+	for (int tt =1 ; tt <= search_depth ; tt++){
+	  nega = Search_Max(B,tt) ;
+		if(nega== WIN || TimesUp() )
+			break;
+	}
 	if(BestMove.st !=-1){
 		if(nega>B.Eval()){
 				cerr << "find best move with value "<< nega << " move : " << (BestMove.st)<<" "<<(BestMove.ed) << endl;

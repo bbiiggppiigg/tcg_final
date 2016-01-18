@@ -8,6 +8,7 @@
 		cerr << "current best value "<<B.Eval()<< " is greater than nega_scout value "<< (tmp_pair.first) <<", fliping " << endl;
 	}
 */
+
 std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth,int is_max,int cut){
 
 	trans_node *tn = trans_table[B.Key%MAX_HASH];

@@ -14,7 +14,13 @@
 #include"anqi.hh"
 #include "chinese.h"
 static const char *tbl="KGMRNCPkgmrncpX-";
-
+int compare_mov(const void * lhs, const void * rhs) {
+	if(((MOV *) lhs)->is_eat_move )
+		return -1;
+	if(((MOV *)rhs)->is_eat_move)
+		return 1;
+	return 0;
+}
 extern const char *nam[16];
 extern const char * strings[5];
 static const POS ADJ[32][4]={
@@ -27,6 +33,7 @@ static const POS ADJ[32][4]={
 	{25,20,-1,28},{26,21,24,29},{27,22,25,30},{-1,23,26,31},
 	{29,24,-1,-1},{30,25,28,-1},{31,26,29,-1},{-1,27,30,-1}
 };
+const int order_table[16][16]= {{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,1 },{1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }};
 
 CLR GetColor(FIN f) {
 	return f<FIN_X?f/7:-1;
@@ -38,7 +45,7 @@ LVL GetLevel(FIN f) {
 }
 
 bool ChkEats(FIN fa,FIN fb) {
-	if(fa>=FIN_X)return false; // if fa is dark  or empty, return false
+	/*if(fa>=FIN_X)return false; // if fa is dark  or empty, return false
 	if(fb==FIN_X)return false; // if fb is dark , return false
 	if(fb==FIN_E)return true ; // if fb is empty, retur true
 	if(GetColor(fb)==GetColor(fa)) // if same color,  return false
@@ -50,8 +57,9 @@ bool ChkEats(FIN fa,FIN fb) {
 	const LVL lb=GetLevel(fb);
 	if(la==LVL_K)return lb!=LVL_P;  // if fa is king, eat anything not pawn
 	if(la==LVL_P)return lb==LVL_P||lb==LVL_K; // if fb is pawn, eat pawn and king only
-
-	return la<=lb;
+*/
+	return order_table[fa][fb];
+	//return la<=lb;
 }
 
 static void Output(FILE *fp,POS p) {
@@ -300,6 +308,7 @@ int BOARD::MoveGen(MOVLST &lst) const {
 
 
 	}
+	qsort(lst.mov,lst.num,sizeof(MOV),compare_mov);
 	return lst.num;
 }
 
@@ -410,10 +419,9 @@ void BOARD::DoMove(MOV m, FIN f) {
 		who^=1;
     }
     else {
-	Flip(m.st, f);
-	key ^= zobrist_table[m.st][f];
-	check ^= check_table[m.st][f];
-
+		Flip(m.st, f);
+		key ^= zobrist_table[m.st][f];
+		check ^= check_table[m.st][f];
     }
 }
 

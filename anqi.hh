@@ -5,9 +5,9 @@
 #define get_min(a,b) ((a) < (b) ? (a) : (b))
 
 // (color)
-//  0 = ¬õ¤è (¤j¼g¦r¥À)  red
-//  1 = ¶Â¤è (¤p¼g¦r¥À)  black
-// -1 = ³£¤£¬O
+//  0 =   red
+//  1 =   black
+// -1 = non
 typedef int CLR;
 typedef  int SCORE;
 typedef unsigned int U32;
@@ -22,13 +22,13 @@ const int DEFAULTTIME = 15;
 
 // (level)
 enum LVL {
-	LVL_K=0, // «Ó±N King
-	LVL_G=1, // ¥K¤h Guard
-	LVL_M=2, // ¬Û¶H Minister
-	LVL_R=3, // ÚÏ¨® Rook     // BIG5 ¨S¦³¤H³¡ªº¨®
-	LVL_N=4, // ØX°¨ kNight
-	LVL_C=5, // ¬¶¯¥ Cannon
-	LVL_P=6  // §L¨ò Pawn
+	LVL_K=0, // King
+	LVL_G=1, // Guard
+	LVL_M=2, // Minister
+	LVL_R=3, // Rook
+	LVL_N=4, // kNight
+	LVL_C=5, // Cannon
+	LVL_P=6  // Pawn
 };
 
 enum FIN {
@@ -52,15 +52,17 @@ enum FIN {
 // 28 29 30 31
 
 typedef struct MOV {
-	POS st; // °_ÂI
-	POS ed; // ²×ÂI // ­Y ed==st ªí¥Ü¬OÂ½¤l
+	POS st; //
+	POS ed; // // ­ed == st implies flip
 	bool is_eat_move;
 	MOV() {st= ed=-1;}
 	MOV(POS s,POS e):st(s),ed(e) {}
 	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){};
 	bool operator==(const MOV &x) const {return st==x.st&&ed==x.ed;}
 	MOV operator=(const MOV &x) {st=x.st;ed=x.ed;return MOV(x.st, x.ed);}
+
 }MOV;
+//bool operator<(const MOV &x) const {return this->is_eat_move || ! x.is_eat_move; };
 
 
 typedef struct MOVLST {

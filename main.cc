@@ -54,7 +54,7 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 		cerr<<"New Depth : "<<cut<<endl;
 	}
 	if(tn!=NULL){ //hash hit
-		cerr << " Hash Hit "<<endl;
+	//	cerr << " Hash Hit "<<endl;
 		if(tn->position == B.Key && tn->check == B.Check){
 			if(cut <=tn->search_depth ){
 				if(tn->is_exact){
@@ -64,28 +64,28 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 				}
 			}
 		}
-		cerr<<" End Hastable Update" << endl;
+	//	cerr<<" End Hastable Update" << endl;
 	}else{
-		cerr << " Creating Hash Entry "<<endl;
+	//	cerr << " Creating Hash Entry "<<endl;
 		tn = (trans_node *) malloc (sizeof(trans_node));
-		cerr << " End Creating Hash Entry "<<endl;
+	//	cerr << " End Creating Hash Entry "<<endl;
 	}
 
 	if(B.ChkLose()){ // update value
-		cerr <<"Lost , Updating Hash Entry" <<endl;
+	//	cerr <<"Lost , Updating Hash Entry" <<endl;
 		tn->set_node(B.Key,B.Check,cut,-WIN,MOV(),true);
-		cerr <<" Lost , End updating Hash Entry"<<endl;
+	//	cerr <<" Lost , End updating Hash Entry"<<endl;
 		return make_pair(-WIN,MOV());
 	}
 
 	MOVLST lst;
 
 	if(cut==depth || TimesUp() || B.MoveGen(lst)==0 ){
-		cerr <<"At length or TimesUp or Something , Update Hash Entry"<<endl;
+	//	cerr <<"At length or TimesUp or Something , Update Hash Entry"<<endl;
 		if(cut >= tn->search_depth){
 			tn->set_node(B.Key,B.Check,cut,B.Eval(),MOV(),true);
 		}
-		cerr <<"At length or TimesUp or Something , End Update Hash Entry"<<endl;
+	//	cerr <<"At length or TimesUp or Something , End Update Hash Entry"<<endl;
 		return make_pair( B.Eval(),MOV());
 	}
 
@@ -114,9 +114,9 @@ std::pair<SCORE,MOV> nega_scout(const BOARD & B , int alpha, int beta, int depth
 		//if(get_max(alpha,m)!=alpha)
 		n=get_max(alpha,m)+1;
 	}
-	cerr << "At End , Updating Hash Entry , No cut"<<endl;
+	//cerr << "At End , Updating Hash Entry , No cut"<<endl;
 	tn->set_node(B.Key,B.Check,cut,m,RET_MOVE,true);
-	cerr << "At End , End Updating Hash Entry , No cut"<<endl;
+	//cerr << "At End , End Updating Hash Entry , No cut"<<endl;
 	return make_pair(m,RET_MOVE);
 }
 

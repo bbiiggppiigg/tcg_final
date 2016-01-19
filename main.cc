@@ -127,6 +127,7 @@ SCORE Search_Max(const BOARD & B,int depth){
 	}
 	//lst.sort();
 	//cerr<<lst.mov[0].st<<" "<<lst.mov[0].ed<<endl;
+	BestMove = lst.mov[0];
 	for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);

@@ -51,6 +51,18 @@ enum FIN {
 // 24 25 26 27
 // 28 29 30 31
 
+typedef struct EAT_COUNTER{
+	int num_cs;
+	int num_ucs;
+	EAT_COUNTER(){
+		num_ucs = num_cs =0;
+	};
+	EAT_COUNTER(int cs, int ucs): num_cs(cs) , num_ucs(ucs){};
+	int score() const{
+		return num_cs+4*num_ucs+1;
+	}
+}EAT_COUNTER;
+
 typedef struct MOV {
 	POS st; //
 	POS ed; // // ­ed == st implies flip
@@ -59,25 +71,42 @@ typedef struct MOV {
 	MOV(POS s,POS e):st(s),ed(e) {}
 	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){};
 	bool operator==(const MOV &x) const {return st==x.st&&ed==x.ed;}
-	MOV operator=(const MOV &x) {st=x.st;ed=x.ed;return MOV(x.st, x.ed);}
+	MOV operator=(const MOV &x) {st=x.st;ed=x.ed; is_eat_move = x.is_eat_move; return MOV(x.st, x.ed,x.is_eat_move);}
 
 }MOV;
 //bool operator<(const MOV &x) const {return this->is_eat_move || ! x.is_eat_move; };
 
 
 typedef struct MOVLST {
-	int num;     // ¨«ªk¼Æ(²¾°Ê+¦Y¤l,¤£¥]¬AÂ½¤l)
-	MOV mov[68];
+		int num;     // ¨«ªk¼Æ(²¾°Ê+¦Y¤l,¤£¥]¬AÂ½¤l)
+		MOV mov[68];
+		MOVLST(){
+			num =0;
+		}
+		void sort(){
+			for (int i =0 ;i  < num; i ++){
+					for (int j =i+1 ; j <num; j ++){
+							if(!mov[i].is_eat_move && mov[j].is_eat_move){
+								MOV tmp = mov[j];
+								mov[j] = mov[i];
+								mov[i] = tmp;
+							}
+					}
+			}
+		}
 }MOVLST;
 
 typedef struct BOARD {
-	CLR who;     // ²{¦b½ü¨ì¨º¤@¤è¤U
-	FIN fin[32]; // ¦U­Ó¦ì¸m¤W­±Â\¤FÔ£
-	int cnt[14]; // ¦UºØ´Ñ¤lªº¥¼Â½¶}¼Æ¶q
+	CLR who;     // Whose turn is it
+	FIN fin[32]; // What is  currently on the board
+	int cnt[14]; // The count of dark piecess
+	int total_cnt[14];
+
+	EAT_COUNTER eat_cnt[14];
 	U32 key;
 	U32 check;
-	void NewGame();              // ¶}·s¹CÀ¸
-	int  LoadGame(const char*);  // ¸ü¤J¹CÀ¸¨Ã¶Ç¦^®É­­(³æ¦ì:¬í)
+	void NewGame();              // Start a new game
+	int  LoadGame(const char*);  // Load from board.txt
 	void Display() const;        // Åã¥Ü¨ì stderr ¤W
 	int  MoveGen(MOVLST&) const; // ¦C¥X©Ò¦³¨«ªk(¨«¤l+¦Y¤l,¤£¥]¬AÂ½¤l)
 	                             // ¦^¶Ç¨«ªk¼Æ¶q
@@ -90,6 +119,7 @@ typedef struct BOARD {
 	void Init(int Board[32], int Piece[14], int Color);
 	void Init(char Board[32], int Piece[14], int Color);
 	SCORE Eval() const;
+	SCORE Eval2() const;
 }BOARD;
 
 CLR  GetColor(FIN);    // ºâ¥X´Ñ¤lªºÃC¦â

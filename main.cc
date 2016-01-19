@@ -91,6 +91,7 @@ SCORE nega_scout2(const BOARD & B,int alpha , int beta, int depth , int cut){
 			tn->set_node(B.key,B.check,cut,B.Eval(),MOV(),true);
 			return B.Eval();
 		}
+		//lst.sort();
 		for (int i =0; i <lst.num ;i++){
 			BOARD N(B);
 			N.Move(lst.mov[i]);
@@ -122,13 +123,17 @@ SCORE Search_Max(const BOARD & B,int depth){
 	B.MoveGen(lst);
 	if(lst.num ==0 ){
 		BestMove =  MOV();
+		return m;
 	}
+	//lst.sort();
+	//cerr<<lst.mov[0].st<<" "<<lst.mov[0].ed<<endl;
 	for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);
+
 		SCORE t =  -nega_scout2(N,-n,-get_max(alpha,m),depth,cut+1); // null window search
 		if(t>m){ // if failed high
-			if(n==beta || depth-cut < 3 || t>= beta){
+			if(n==beta || t>= beta){
 				m = t;
 			}else{
 				m  = -nega_scout2(N,-beta,-t,depth,cut+1); //research

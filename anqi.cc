@@ -33,7 +33,23 @@ static const POS ADJ[32][4]={
 	{25,20,-1,28},{26,21,24,29},{27,22,25,30},{-1,23,26,31},
 	{29,24,-1,-1},{30,25,28,-1},{31,26,29,-1},{-1,27,30,-1}
 };
-const int order_table[16][16]= {{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,1 },{1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }};
+const int order_table[16][16]= {
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,1 },
+	{1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{0 ,0 ,0 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{1 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
+	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }};
 
 CLR GetColor(FIN f) {
 	return f<FIN_X?f/7:-1;
@@ -87,7 +103,11 @@ void BOARD::NewGame() {
 	static const int tbl[]={1,2,2,2,2,2,5};
 	who=-1;
 	for(POS p=0;p<32;p++)fin[p]=FIN_X;
-	for(int i=0;i<14;i++)cnt[i]=tbl[GetLevel(FIN(i))];
+	for(int i=0;i<14;i++){
+		cnt[i]=tbl[GetLevel(FIN(i))];
+		total_cnt[i] = tbl[GetLevel(FIN(i))];
+	}
+
 }
 
 static FIN find(char c) {
@@ -138,28 +158,39 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
     key = 0;
     check =0 ;
     for (int i = 0 ; i < 14; ++i) {
-	cnt[i] = Piece[i];
+			cnt[i] = Piece[i];
     }
     for (int i = 0 ; i < 32; ++i) {
-	switch(Board[i]) {
-	    case '-': fin[i] = FIN_E;break;
-	    case 'K': fin[i] = FIN_K;cnt[FIN_K]--; key ^= zobrist_table[i][FIN_K]; check ^= check_table[i][FIN_K];break;
-	    case 'G': fin[i] = FIN_G;cnt[FIN_G]--; key ^= zobrist_table[i][FIN_G]; check ^= check_table[i][FIN_G];break;
-	    case 'M': fin[i] = FIN_M;cnt[FIN_M]--; key ^= zobrist_table[i][FIN_M]; check ^= check_table[i][FIN_M];break;
-	    case 'R': fin[i] = FIN_R;cnt[FIN_R]--; key ^= zobrist_table[i][FIN_R]; check ^= check_table[i][FIN_R];break;
-	    case 'N': fin[i] = FIN_N;cnt[FIN_N]--; key ^= zobrist_table[i][FIN_N]; check ^= check_table[i][FIN_N];break;
-	    case 'C': fin[i] = FIN_C;cnt[FIN_C]--; key ^= zobrist_table[i][FIN_C]; check ^= check_table[i][FIN_C];break;
-	    case 'P': fin[i] = FIN_P;cnt[FIN_P]--; key ^= zobrist_table[i][FIN_P]; check ^= check_table[i][FIN_P];break;
-	    case 'X': fin[i] = FIN_X;break;
-	    case 'k': fin[i] = FIN_k;cnt[FIN_k]--;key ^= zobrist_table[i][FIN_k]; check ^= check_table[i][FIN_k];break;
-	    case 'g': fin[i] = FIN_g;cnt[FIN_g]--;key ^= zobrist_table[i][FIN_g]; check ^= check_table[i][FIN_g];break;
-	    case 'm': fin[i] = FIN_m;cnt[FIN_m]--;key ^= zobrist_table[i][FIN_m]; check ^= check_table[i][FIN_m];break;
-	    case 'r': fin[i] = FIN_r;cnt[FIN_r]--;key ^= zobrist_table[i][FIN_r]; check ^= check_table[i][FIN_r];break;
-	    case 'n': fin[i] = FIN_n;cnt[FIN_n]--;key ^= zobrist_table[i][FIN_n]; check ^= check_table[i][FIN_n];break;
-	    case 'c': fin[i] = FIN_c;cnt[FIN_c]--;key ^= zobrist_table[i][FIN_c]; check ^= check_table[i][FIN_c];break;
-	    case 'p': fin[i] = FIN_p;cnt[FIN_p]--;key ^= zobrist_table[i][FIN_p]; check ^= check_table[i][FIN_p];break;
-	}
+			switch(Board[i]) {
+			    case '-': fin[i] = FIN_E;break;
+			    case 'K': fin[i] = FIN_K;cnt[FIN_K]--; key ^= zobrist_table[i][FIN_K]; check ^= check_table[i][FIN_K];break;
+			    case 'G': fin[i] = FIN_G;cnt[FIN_G]--; key ^= zobrist_table[i][FIN_G]; check ^= check_table[i][FIN_G];break;
+			    case 'M': fin[i] = FIN_M;cnt[FIN_M]--; key ^= zobrist_table[i][FIN_M]; check ^= check_table[i][FIN_M];break;
+			    case 'R': fin[i] = FIN_R;cnt[FIN_R]--; key ^= zobrist_table[i][FIN_R]; check ^= check_table[i][FIN_R];break;
+			    case 'N': fin[i] = FIN_N;cnt[FIN_N]--; key ^= zobrist_table[i][FIN_N]; check ^= check_table[i][FIN_N];break;
+			    case 'C': fin[i] = FIN_C;cnt[FIN_C]--; key ^= zobrist_table[i][FIN_C]; check ^= check_table[i][FIN_C];break;
+			    case 'P': fin[i] = FIN_P;cnt[FIN_P]--; key ^= zobrist_table[i][FIN_P]; check ^= check_table[i][FIN_P];break;
+			    case 'X': fin[i] = FIN_X;break;
+			    case 'k': fin[i] = FIN_k;cnt[FIN_k]--;key ^= zobrist_table[i][FIN_k]; check ^= check_table[i][FIN_k];break;
+			    case 'g': fin[i] = FIN_g;cnt[FIN_g]--;key ^= zobrist_table[i][FIN_g]; check ^= check_table[i][FIN_g];break;
+			    case 'm': fin[i] = FIN_m;cnt[FIN_m]--;key ^= zobrist_table[i][FIN_m]; check ^= check_table[i][FIN_m];break;
+			    case 'r': fin[i] = FIN_r;cnt[FIN_r]--;key ^= zobrist_table[i][FIN_r]; check ^= check_table[i][FIN_r];break;
+			    case 'n': fin[i] = FIN_n;cnt[FIN_n]--;key ^= zobrist_table[i][FIN_n]; check ^= check_table[i][FIN_n];break;
+			    case 'c': fin[i] = FIN_c;cnt[FIN_c]--;key ^= zobrist_table[i][FIN_c]; check ^= check_table[i][FIN_c];break;
+			    case 'p': fin[i] = FIN_p;cnt[FIN_p]--;key ^= zobrist_table[i][FIN_p]; check ^= check_table[i][FIN_p];break;
+			}
     }
+		for (int i =0 ;i < 14 ;i ++){
+			for (int j=0 ; j < 14 ;j ++){
+				if(order_table[i][j]){
+					if(order_table[j][i]){
+							eat_cnt[i].num_cs ++;
+					}else{
+							eat_cnt[i].num_ucs++;
+					}
+				}
+			}
+		}
     who = Color;
 }
 
@@ -264,7 +295,10 @@ void BOARD::Display() const {
 
 int BOARD::MoveGen(MOVLST &lst) const {
 	if(who==-1)return false;
-	lst.num=0;
+	//lst.num=0;
+	//MOVLST eat_list;
+	//MOVLST move_list;
+
 	for(POS p=0;p<32;p++) {
 		const FIN pf=fin[p];
 		if(GetColor(pf)!=who)continue; // if not own piece , continue
@@ -281,6 +315,11 @@ int BOARD::MoveGen(MOVLST &lst) const {
 				if(!ChkEats(pf,qf))
 					continue;
 
+			/*	if(qf!=FIN_E){
+					eat_list.mov[eat_list.num++]=MOV(p,q,true);
+				}else
+					move_list.mov[move_list.num++]=MOV(p,q,false);
+*/
 				lst.mov[lst.num++]=MOV(p,q,qf!=FIN_E);
 			}
 		}else{
@@ -289,8 +328,11 @@ int BOARD::MoveGen(MOVLST &lst) const {
 				POS q = ADJ[p][z];
 				if(q==-1)
 					break;
-				if(fin[q] ==FIN_E)
+				if(fin[q] ==FIN_E){
 					lst.mov[lst.num++] = MOV(p,q,false);
+					//move_list.mov[move_list.num++]=MOV(p,q,false);
+				}
+
 
 				do{
 					const FIN qf=fin[q];
@@ -298,8 +340,11 @@ int BOARD::MoveGen(MOVLST &lst) const {
 					if(qf==FIN_E||++c!=2) // count the second non_empty slot
 						continue;
 
-					if(qf!=FIN_X &&	GetColor(qf)!=who)
+					if(qf!=FIN_X &&	GetColor(qf)!=who){
 						lst.mov[lst.num++]=MOV(p,q,true);
+					//	eat_list.mov[eat_list.num++] = MOV(p,q,true);
+					}
+
 					break;
 				}while((q=ADJ[q][z])!=-1);
 
@@ -308,7 +353,15 @@ int BOARD::MoveGen(MOVLST &lst) const {
 
 
 	}
-	qsort(lst.mov,lst.num,sizeof(MOV),compare_mov);
+	//qsort(lst.mov,lst.num,sizeof(MOV),compare_mov);
+	//lst.sort();
+	/*for (int x =0 ;x < eat_list.num ; x++){
+		lst.mov[lst.num++] = eat_list.mov[x];
+	}
+	for (int x =0 ;x < move_list.num ; x++){
+		lst.mov[lst.num++] = move_list.mov[x];
+	}*/
+	lst.sort();
 	return lst.num;
 }
 
@@ -394,15 +447,25 @@ void BOARD::Move(MOV m) {
 
 		FIN st = fin[m.st];
 		FIN ed = fin[m.ed];
-		if(ed != FIN_E){
+		if(ed != FIN_E){ // remove the effect of removed piece
 			key ^= zobrist_table[m.ed][ed];
 			check ^= check_table[m.ed][ed];
+			total_cnt[ed]--;
+			for(int x= 0; x < 14 ;x++){
+				if(order_table[x][ed]){
+					if(order_table[ed][x])
+						eat_cnt[x].num_cs--;
+					else
+						eat_cnt[x].num_ucs--;
+				}
+			}
 		}
+		// remove the effect of moved piece
 		key ^= zobrist_table[m.st][st];
 		check ^= check_table[m.st][st];
+		// add the effect of moved piece
 		key ^= zobrist_table[m.ed][st];
 		check ^= check_table[m.ed][st];
-
 
 	} else {
 
@@ -417,6 +480,29 @@ void BOARD::DoMove(MOV m, FIN f) {
 		fin[m.ed]=fin[m.st];
 		fin[m.st]=FIN_E;
 		who^=1;
+
+		FIN st = fin[m.st];
+		FIN ed = fin[m.ed];
+		if(ed != FIN_E){ // remove the effect of removed piece
+			key ^= zobrist_table[m.ed][ed];
+			check ^= check_table[m.ed][ed];
+			total_cnt[ed]--;
+			for(int x= 0; x < 14 ;x++){
+				if(order_table[x][ed]){
+					if(order_table[ed][x])
+						eat_cnt[x].num_cs--;
+					else
+						eat_cnt[x].num_ucs--;
+				}
+			}
+
+		}
+		// remove the effect of moved piece
+		key ^= zobrist_table[m.st][st];
+		check ^= check_table[m.st][st];
+		// add the effect of moved piece
+		key ^= zobrist_table[m.ed][st];
+		check ^= check_table[m.ed][st];
     }
     else {
 		Flip(m.st, f);
@@ -425,10 +511,22 @@ void BOARD::DoMove(MOV m, FIN f) {
     }
 }
 
-SCORE BOARD::Eval() const {
+SCORE BOARD::Eval2() const {
 	int cnt2[2]={0,0};
 	for(POS p=0;p<32;p++){const CLR c=GetColor(fin[p]);if(c!=-1)cnt2[c]++;}
 	for(int i=0;i<14;i++)cnt2[GetColor(FIN(i))]+=cnt[i];
 	return cnt2[who]-cnt2[who^1];
 
+}
+
+SCORE BOARD::Eval() const {
+	int ret_cnt[2] = {0,0};
+	for (int i = 0; i < 14 ;i ++){
+		if(i==5 || i == 12 )
+			//ret_cnt[GetColor(FIN(i))]+= 4 * total_cnt[i]
+			continue;
+		else
+			ret_cnt[GetColor(FIN(i))]+= total_cnt[i] * (eat_cnt[i].score());
+	}
+	return ret_cnt[who]-ret_cnt[who^1];
 }

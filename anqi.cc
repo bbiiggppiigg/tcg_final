@@ -242,7 +242,7 @@ void BOARD::Display() const {
 			SetConsoleTextAttribute(hErr,12);
 #endif
 			fputs("  ",stderr);
-			for(int j=0;j<7;j++)for(int k=0;k<cnt[j];k++)fputs(nam[j],stderr);
+			for(int j=0;j<7;j++)for(int k=0;k<cnt[j];k++)for(int j=7;j<14;j++)for(int k=0;k<cnt[j];k++)fprintf(stderr,ANSI_COLOR_RED "%s" ANSI_COLOR_RESET ,nam[j]);
 		}
 		fputc('\n',stderr);
 		for(int j=0;j<4;j++) {
@@ -251,7 +251,13 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 			SetConsoleTextAttribute(hErr,(c!=-1?12-c*2:7));
 #endif
-			fprintf(stderr," %s ",nam[fin[mkpos(7-i,j)]]);
+		if(c==0)
+			fprintf(stderr, ANSI_COLOR_RED " %s " ANSI_COLOR_RESET,nam[fin[mkpos(7-i,j)]]);
+		else if(c==1)
+			fprintf(stderr, ANSI_COLOR_BLUE " %s " ANSI_COLOR_RESET,nam[fin[mkpos(7-i,j)]]);
+		else
+			fprintf(stderr, " %s " ,nam[fin[mkpos(7-i,j)]]);
+
 		}
 		if(i==0) {
 #ifdef _WINDOWS
@@ -262,12 +268,14 @@ void BOARD::Display() const {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,12);
 #endif
-				fputs(strings[1],stderr);
+
+				fprintf(stderr,ANSI_COLOR_RED "%s" ANSI_COLOR_RESET ,strings[1]);
 			} else if(who==1) {
 #ifdef _WINDOWS
 				SetConsoleTextAttribute(hErr,10);
 #endif
-				fputs(strings[2],stderr);
+
+				fprintf(stderr,ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET ,strings[2]);
 			} else {
 				fputs(strings[3],stderr);
 			}
@@ -281,7 +289,7 @@ void BOARD::Display() const {
 			SetConsoleTextAttribute(hErr,10);
 #endif
 			fputs("  ",stderr);
-			for(int j=7;j<14;j++)for(int k=0;k<cnt[j];k++)fputs(nam[j],stderr);
+			for(int j=7;j<14;j++)for(int k=0;k<cnt[j];k++)fprintf(stderr,ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET ,nam[j]);
 		}
 		fputc('\n',stderr);
 	}

@@ -63,21 +63,7 @@ LVL GetLevel(FIN f) {
 }
 
 bool ChkEats(FIN fa,FIN fb) {
-	/*if(fa>=FIN_X)return false; // if fa is dark  or empty, return false
-	if(fb==FIN_X)return false; // if fb is dark , return false
-	if(fb==FIN_E)return true ; // if fb is empty, retur true
-	if(GetColor(fb)==GetColor(fa)) // if same color,  return false
-		return false;
-
-	const LVL la=GetLevel(fa);	// if cannon , always return true
-	if(la==LVL_C)return true ;
-
-	const LVL lb=GetLevel(fb);
-	if(la==LVL_K)return lb!=LVL_P;  // if fa is king, eat anything not pawn
-	if(la==LVL_P)return lb==LVL_P||lb==LVL_K; // if fb is pawn, eat pawn and king only
-*/
 	return order_table[fa][fb];
-	//return la<=lb;
 }
 
 static void Output(FILE *fp,POS p) {
@@ -166,7 +152,7 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
 			cnt[i] = Piece[i];
 			total_cnt[i] = initial_pieces[i];
     }
-		total_sum[0] = total_sum[1];
+		total_sum[0] = total_sum[1] =16;
 		for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case '-': fin[i] = FIN_E;break;

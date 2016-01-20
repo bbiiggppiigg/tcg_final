@@ -25,16 +25,7 @@ int compare_mov(const void * lhs, const void * rhs) {
 }
 extern const char *nam[16];
 extern const char * strings[5];
-static const POS ADJ[32][4]={
-	{ 1,-1,-1, 4},{ 2,-1, 0, 5},{ 3,-1, 1, 6},{-1,-1, 2, 7},
-	{ 5, 0,-1, 8},{ 6, 1, 4, 9},{ 7, 2, 5,10},{-1, 3, 6,11},
-	{ 9, 4,-1,12},{10, 5, 8,13},{11, 6, 9,14},{-1, 7,10,15},
-	{13, 8,-1,16},{14, 9,12,17},{15,10,13,18},{-1,11,14,19},
-	{17,12,-1,20},{18,13,16,21},{19,14,17,22},{-1,15,18,23},
-	{21,16,-1,24},{22,17,20,25},{23,18,21,26},{-1,19,22,27},
-	{25,20,-1,28},{26,21,24,29},{27,22,25,30},{-1,23,26,31},
-	{29,24,-1,-1},{30,25,28,-1},{31,26,29,-1},{-1,27,30,-1}
-};
+extern const POS POW[32][4];
 const int order_table[16][16]= {
 	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,1 },
 	{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 },
@@ -58,7 +49,7 @@ CLR GetColor(FIN f) {
 }
 
 LVL GetLevel(FIN f) {
-	assert(f<FIN_X);
+//	assert(f<FIN_X);
 	return LVL(f%7);
 }
 
@@ -92,6 +83,7 @@ void BOARD::NewGame() {
 	who=-1;
 	total_sum[0] = total_sum[1] = 16;
 	total_pos_score[0] = total_pos_score[1] =0 ;
+	empty =0;
 	dark_cnt[0] = dark_cnt[1] = 16;
 	for(POS p=0;p<32;p++)fin[p]=FIN_X;
 	for(int i=0;i<14;i++){
@@ -126,6 +118,7 @@ void BOARD::Init(int Board[32], int Piece[14], int Color) {
 		total_sum [0] = total_sum[1] = 16;
 		dark_cnt[0] = dark_cnt[1] = 16;
 		total_pos_score[0] = total_pos_score[1] =0 ;
+		empty =0;
     for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case 0: fin[i] = FIN_E;break;
@@ -159,6 +152,7 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
 		total_sum[0] = total_sum[1] =16;
 		dark_cnt[0] = dark_cnt[1] = 16;
 		total_pos_score[0] = total_pos_score[1] =0 ;
+		empty =0;
 		for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case '-': fin[i] = FIN_E;break;
@@ -205,6 +199,7 @@ int BOARD::LoadGame(const char *fn) {
 	total_sum[0] = total_sum[1] = 16;
 	total_pos_score[0] = total_pos_score[1] =0 ;
 	dark_cnt[0] = dark_cnt[1] = 16;
+	empty =0;
 	fscanf(fp," %*c");
 	for(int i=0;i<14;i++)fscanf(fp,"%d",cnt+i);
 	for (int i = 0 ; i < 14; ++i) {
@@ -478,6 +473,7 @@ void BOARD::Move(MOV m) {
 			key ^= zobrist_table[m.ed][ed];
 			check ^= check_table[m.ed][ed];
 			//cerr<<" st = "<<st<<" ed= " << ed<<endl;
+			empty++;
 			total_cnt[ed]--;
 			total_sum[GetColor(ed)] --;
 			for(int x= 0; x < 14 ;x++){
@@ -525,7 +521,7 @@ void BOARD::DoMove(MOV m, FIN f) {
 				check ^= check_table[m.ed][ed];
 				total_cnt[ed]--;
 				total_sum[GetColor(ed)] --;
-
+				empty++;
 				for(int x= 0; x < 14 ;x++){
 					if(order_table[x][ed]){
 						if(order_table[ed][x])
@@ -556,6 +552,70 @@ void BOARD::DoMove(MOV m, FIN f) {
     }
 }
 
+int BOARD::ChkEat(int x, MOVLST lst) const {
+	int flag =0 ;
+	for (int i =0; i < lst.num && flag ==0 ;i ++){
+		if(lst.mov[i].ed==x )
+		{
+		//	cerr << "x = " << x << " st = " << fin[lst.mov[i].st] << " ed = " << fin[lst.mov[i].ed] <<endl;
+			if((GetLevel(fin[lst.mov[i].st]) !=GetLevel(fin[lst.mov[i].ed])))
+				flag = 1;
+		}
+
+
+
+	}
+	return flag;
+}
+int BOARD::ChkDead( int x,MOVLST lst, MOVLST en) const{
+	int flag =0 ;
+	for (int i =0 ;i < en.num && flag ==0; i++){
+		if(en.mov[i].ed ==x)
+			flag = 1;
+	}
+	if(flag){ //if might be eaten
+		flag =0 ;
+		for(int i=0;i < lst.num && flag ==0; i++){
+			if(lst.mov[i].st ==x) // if exists legal move starts with x,
+				flag = 1;
+		}
+		if(flag)
+			return 0;
+		else
+			return 1;
+	}
+	return 0;
+}
+SCORE BOARD::Eval() const{
+	BOARD N(*this);
+	MOVLST en;
+	N.MoveGen(en);
+	BOARD K(*this);
+	K.who ^=1;
+
+	MOVLST lst;
+	K.MoveGen(lst);
+	float grade =0;
+
+	for (POS p = 0; p <32;p++){
+		if (GetColor(fin[p]) ==who){
+			if(!ChkDead(p,lst,en)){
+				if(!ChkEat(p,lst))
+					grade += (float) value[fin[p] % 7];
+				else
+					grade +=(float ) value[fin[p] % 7] * 0.75f;
+			}
+		}else{
+			if(!ChkEat(p,en)){
+				grade -= (float ) value[fin[p] % 7];
+			}else{
+				grade +=(float ) value[fin[p] % 7] * 0.75f;
+			}
+		}
+	}
+	grade = grade*(1 + 0.01*empty);
+	return (int) grade;
+}
 SCORE BOARD::Eval2() const {
 	int cnt2[2]={0,0};
 	for(POS p=0;p<32;p++){const CLR c=GetColor(fin[p]);if(c!=-1)cnt2[c]++;}
@@ -564,7 +624,7 @@ SCORE BOARD::Eval2() const {
 
 }
 
-SCORE BOARD::Eval() const {
+SCORE BOARD::Eval3() const {
 	int ret_cnt[2] = {0,0};
 	int piece_value[14] ;
 	for (int i = 0; i < 14 ;i ++){

@@ -104,6 +104,7 @@ void Output(MOV m) {
 void BOARD::NewGame() {
 	static const int tbl[]={1,2,2,2,2,2,5};
 	who=-1;
+	total_sum[0] = total_sum[1] = 16;
 	for(POS p=0;p<32;p++)fin[p]=FIN_X;
 	for(int i=0;i<14;i++){
 		cnt[i]=tbl[GetLevel(FIN(i))];
@@ -134,7 +135,7 @@ void BOARD::Init(int Board[32], int Piece[14], int Color) {
 			cnt[i] = Piece[i];
 			total_cnt[i] = initial_pieces[i];
 		}
-
+		total_sum [0] = total_sum[1] = 16;
     for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case 0: fin[i] = FIN_E;break;
@@ -165,6 +166,7 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
 			cnt[i] = Piece[i];
 			total_cnt[i] = initial_pieces[i];
     }
+		total_sum[0] = total_sum[1];
 		for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case '-': fin[i] = FIN_E;break;
@@ -197,6 +199,8 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
 			}
 		}
     who = Color;
+		key ^= turn[who];
+		check ^= turn[who];
 }
 
 int BOARD::LoadGame(const char *fn) {
@@ -206,7 +210,7 @@ int BOARD::LoadGame(const char *fn) {
 	while(fgetc(fp)!='\n');
 
 	while(fgetc(fp)!='\n');
-
+	total_sum[0] = total_sum[1] = 16;
 	fscanf(fp," %*c");
 	for(int i=0;i<14;i++)fscanf(fp,"%d",cnt+i);
 	for (int i = 0 ; i < 14; ++i) {
@@ -306,13 +310,11 @@ void BOARD::Display() const {
 		fprintf(stderr,"%d ",cnt[i]);
 	}
 	fputc('\n',stderr);
+	fprintf(stderr,"red = %d , black = %d\n",total_sum[0],total_sum[1]);
 }
 
 int BOARD::MoveGen(MOVLST &lst) const {
 	if(who==-1)return false;
-	//lst.num=0;
-	//MOVLST eat_list;
-	//MOVLST move_list;
 
 	for(POS p=0;p<32;p++) {
 		const FIN pf=fin[p];
@@ -329,12 +331,6 @@ int BOARD::MoveGen(MOVLST &lst) const {
 				const FIN qf=fin[q];
 				if(!ChkEats(pf,qf))
 					continue;
-
-			/*	if(qf!=FIN_E){
-					eat_list.mov[eat_list.num++]=MOV(p,q,true);
-				}else
-					move_list.mov[move_list.num++]=MOV(p,q,false);
-*/
 				lst.mov[lst.num++]=MOV(p,q,qf!=FIN_E);
 			}
 		}else{
@@ -345,7 +341,6 @@ int BOARD::MoveGen(MOVLST &lst) const {
 					break;
 				if(fin[q] ==FIN_E){
 					lst.mov[lst.num++] = MOV(p,q,false);
-					//move_list.mov[move_list.num++]=MOV(p,q,false);
 				}
 
 
@@ -357,7 +352,6 @@ int BOARD::MoveGen(MOVLST &lst) const {
 
 					if(qf!=FIN_X &&	GetColor(qf)!=who){
 						lst.mov[lst.num++]=MOV(p,q,true);
-					//	eat_list.mov[eat_list.num++] = MOV(p,q,true);
 					}
 
 					break;
@@ -369,13 +363,6 @@ int BOARD::MoveGen(MOVLST &lst) const {
 
 	}
 	//qsort(lst.mov,lst.num,sizeof(MOV),compare_mov);
-	//lst.sort();
-	/*for (int x =0 ;x < eat_list.num ; x++){
-		lst.mov[lst.num++] = eat_list.mov[x];
-	}
-	for (int x =0 ;x < move_list.num ; x++){
-		lst.mov[lst.num++] = move_list.mov[x];
-	}*/
 	lst.sort();
 	return lst.num;
 }
@@ -450,8 +437,11 @@ void BOARD::Flip(POS p,FIN f) {
 	}
 	fin[p]=f;
 	cnt[f]--;
-	if(who==-1)who=GetColor(f);
+	if(who==-1)
+		who=GetColor(f);
 	who^=1;
+	key^= turn[who];
+	check^= turn[who];
 }
 
 void BOARD::Move(MOV m) {
@@ -464,6 +454,7 @@ void BOARD::Move(MOV m) {
 			check ^= check_table[m.ed][ed];
 			//cerr<<" st = "<<st<<" ed= " << ed<<endl;
 			total_cnt[ed]--;
+			total_sum[GetColor(ed)] --;
 			for(int x= 0; x < 14 ;x++){
 				if(order_table[x][ed]){
 					if(order_table[ed][x])
@@ -483,7 +474,8 @@ void BOARD::Move(MOV m) {
 		fin[m.ed]=fin[m.st];
 		fin[m.st]=FIN_E;
 		who^=1;
-
+		key^= turn[who];
+		check ^= turn[who];
 	} else {
 
 		Flip(m.st);
@@ -501,6 +493,8 @@ void BOARD::DoMove(MOV m, FIN f) {
 				key ^= zobrist_table[m.ed][ed];
 				check ^= check_table[m.ed][ed];
 				total_cnt[ed]--;
+				total_sum[GetColor(ed)] --;
+
 				for(int x= 0; x < 14 ;x++){
 					if(order_table[x][ed]){
 						if(order_table[ed][x])
@@ -517,15 +511,17 @@ void BOARD::DoMove(MOV m, FIN f) {
 			// add the effect of moved piece
 			key ^= zobrist_table[m.ed][st];
 			check ^= check_table[m.ed][st];
-		fin[m.ed]=fin[m.st];
-		fin[m.st]=FIN_E;
-		who^=1;
 
+			fin[m.ed]=fin[m.st];
+			fin[m.st]=FIN_E;
+			who^=1;
+			key^= turn[who];
+			check ^= turn[who];
 		}
     else {
-		Flip(m.st, f);
-		key ^= zobrist_table[m.st][f];
-		check ^= check_table[m.st][f];
+			Flip(m.st, f);
+			key ^= zobrist_table[m.st][f];
+			check ^= check_table[m.st][f];
     }
 }
 
@@ -539,12 +535,34 @@ SCORE BOARD::Eval2() const {
 
 SCORE BOARD::Eval() const {
 	int ret_cnt[2] = {0,0};
+	int piece_value[14] ;
 	for (int i = 0; i < 14 ;i ++){
-		if(i==5 || i == 12 )
-			//ret_cnt[GetColor(FIN(i))]+= 4 * total_cnt[i]
+		piece_value[i]= 0;
+		if(i==5 || i == 12 ){
+		//	ret_cnt[GetColor(FIN(i))]+= 4 * total_cnt[i]
 			continue;
-		else
-			ret_cnt[GetColor(FIN(i))]+= total_cnt[i] * (eat_cnt[i].score()+50);
+		}else{
+			piece_value[i] = total_cnt[i]*GetValue(i);
+		}
+			//ret_cnt[GetColor(FIN(i))]+= total_cnt[i] * (eat_cnt[i].score()+50);
 	}
+	for (int i= 0 ;i < 14 ;i++){
+		ret_cnt[GetColor(FIN(i))]+= total_cnt[i] * (piece_value[i]+50);
+	}
+	piece_value[5] = (piece_value[1]* 4 )/15;
+	piece_value[5] = (piece_value[1]* 4 )/15;
+
 	return ret_cnt[who]-ret_cnt[who^1];
+}
+int BOARD::GetValue(int f) const{
+	int ret =0 ;
+	for (int j = 0; j< 14 ;j++){
+		if(order_table[f][j]){
+			if(j==1 ||  j== 5){
+				ret+= 4*total_sum[GetColor(FIN(j))]+total_sum[GetColor(FIN(j))^1];
+			}else
+				ret += (eat_cnt[j].score() * total_cnt[j]);
+		}
+	}
+	return ret;
 }

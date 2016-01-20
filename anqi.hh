@@ -5,7 +5,7 @@
 #define get_min(a,b) ((a) < (b) ? (a) : (b))
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_BLUE    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 // (color)
@@ -24,7 +24,7 @@ static const U32 check_table[32][15] = {{92224486,1681226715,1935055426,98419461
 const int DEFAULTTIME = 15;
 const int initial_pieces[14] = {1,2,2,2,2,2,5,1,2,2,2,2,2,5};
 static const U32 turn[2]= {2957199342U,1642319895U};
-
+static const int pos_score[32] = {2,3,3,2,3,4,4,3,3,4,4,3,3,5,5,3,3,5,5,3,3,4,4,3,3,4,4,3,2,3,3,2};
 // (level)
 enum LVL {
 	LVL_K=0, // King
@@ -72,7 +72,7 @@ typedef struct MOV {
 	POS st; //
 	POS ed; // // ­ed == st implies flip
 	bool is_eat_move;
-	MOV() {st= ed=-1;}
+	MOV() {st= ed=-1; is_eat_move = false;}
 	MOV(POS s,POS e):st(s),ed(e) {is_eat_move = (s!=e);};
 	MOV(POS s, POS e, bool eat): st(s), ed(e), is_eat_move(eat){};
 	bool operator==(const MOV &x) const {return st==x.st&&ed==x.ed;}
@@ -85,13 +85,14 @@ typedef struct MOV {
 typedef struct MOVLST {
 		int num;     // ¨«ªk¼Æ(²¾°Ê+¦Y¤l,¤£¥]¬AÂ½¤l)
 		MOV mov[68];
+		SCORE scores[68];
 		MOVLST(){
 			num =0;
 		}
 		void sort(){
 			for (int i =0 ;i  < num; i ++){
 					for (int j =i+1 ; j <num; j ++){
-							if(!mov[i].is_eat_move && mov[j].is_eat_move){
+							if(scores[i] > scores[j]){
 								MOV tmp = mov[j];
 								mov[j] = mov[i];
 								mov[i] = tmp;
@@ -106,8 +107,11 @@ typedef struct BOARD {
 	FIN fin[32]; // What is  currently on the board
 	int cnt[14]; // The count of dark piecess
 	int total_cnt[14]; // count of each living piec (dark or not)
+
+	int dark_cnt[2];
 	int total_sum[2];
 
+	int total_pos_score[2];
 	EAT_COUNTER eat_cnt[14];
 	U32 key;
 	U32 check;
@@ -122,6 +126,7 @@ typedef struct BOARD {
 	void Flip(POS,FIN=FIN_X);    // Â½¤l
 	void Move(MOV);              // ²¾°Ê or ¦Y¤l
 	void DoMove(MOV m, FIN f) ;
+	
 	void Init(int Board[32], int Piece[14], int Color);
 	void Init(char Board[32], int Piece[14], int Color);
 	SCORE Eval() const;

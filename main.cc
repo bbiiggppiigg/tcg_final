@@ -92,15 +92,21 @@ SCORE nega_scout2(const BOARD & B,int alpha , int beta, int depth , int cut){
 			return B.Eval();
 		}
 		//lst.sort();
+		BOARD boards[68] ;
+		for (int i=0; i < lst.num;i++){
+			boards[i] = B;
+			boards[i].Move(lst.mov[i]);
+			lst.scores[i]= boards[i].Eval();
+		}
+		lst.sort();
 		for (int i =0; i <lst.num ;i++){
-			BOARD N(B);
-			N.Move(lst.mov[i]);
-			SCORE t = -nega_scout2(N,-n,-get_max(alpha,m),depth,cut+1);
+
+			SCORE t = -nega_scout2(boards[i],-n,-get_max(alpha,m),depth,cut+1);
 			if(t>m){
 				if(n==beta || depth -cut <3 || t >= beta){
 					m = t;
 				}else{
-					m = -nega_scout2(N,-beta,-t,depth,cut+1);
+					m = -nega_scout2(boards[i],-beta,-t,depth,cut+1);
 				}
 			}
 			if(m>=beta){
@@ -125,10 +131,31 @@ SCORE Search_Max(const BOARD & B,int depth){
 		BestMove =  MOV();
 		return m;
 	}
-	//lst.sort();
-	//cerr<<lst.mov[0].st<<" "<<lst.mov[0].ed<<endl;
+	BOARD boards[68] ;
+	for (int i=0; i < lst.num;i++){
+		boards[i] = B;
+		boards[i].Move(lst.mov[i]);
+		lst.scores[i]= boards[i].Eval();
+	}
+	lst.sort();
 	BestMove = lst.mov[0];
-	for (int i = 0 ; i< lst.num;i++){
+	for (int i=0 ;i < lst.num;i++){
+		SCORE t =  -nega_scout2(boards[i],-n,-get_max(alpha,m),depth,cut+1); // null window search
+		if(t>m){ // if failed high
+			if(n==beta || t>= beta){
+				m = t;
+			}else{
+				m  = -nega_scout2(boards[i],-beta,-t,depth,cut+1); //research
+			}
+			BestMove = lst.mov[i];
+		}
+		if(m>=beta){ //cut off
+			BestMove = lst.mov[i];
+			return m;
+		}
+		n=get_max(alpha,m)+1;
+	}
+	/*for (int i = 0 ; i< lst.num;i++){
 		BOARD N (B);
 		N.Move(lst.mov[i]);
 
@@ -146,7 +173,7 @@ SCORE Search_Max(const BOARD & B,int depth){
 			return m;
 		}
 		n=get_max(alpha,m)+1;
-	}
+	}*/
 
 	return m;
 
@@ -163,7 +190,7 @@ MOV Play(const BOARD &B) {
 #endif
 	POS p; int c=0;
 	max_length = 0 ;
-	int search_depth = 8;
+	int search_depth = 12;
 
 	if(B.who==-1){p=rand()%32;printf("%d\n",p);return MOV(p,p);}
 
@@ -181,18 +208,40 @@ MOV Play(const BOARD &B) {
 				cerr << "current best value "<<B.Eval()<< " is no less than nega_scout value "<< nega <<", fliping " << endl;
 		}
 	}
+	SCORE m = -INF;
+	SCORE n = - INF;
+	MOV BestFlip = MOV();
+	SCORE BestFlipScore = -INF;
+	for (p =0 ; p < 32 ; p++){
 
-	for(p=0;p<32;p++)if(B.fin[p]==FIN_X)c++;
+		SCORE sum_p = 0;
+		if(B.fin[p]==FIN_X){
+			for(int i =0; i< 14; i ++){
+				if(TimesUp()) break;
+				if(B.cnt[i]==0) continue;
+					double probo = (double ) B.cnt[i] / (B.dark_cnt[0]+B.dark_cnt[1]);
+					BOARD N(B);
+					N.Flip(p,FIN(i));
+					SCORE t = -nega_scout2(N,-INF,-INF,6,0);
+					sum_p += probo* t;
+			}
+			if(sum_p > BestFlipScore){
+				BestFlipScore = sum_p;
+				BestFlip = MOV(p,p);
+			}
+		}
+	}
 
-	if(c==0){
+
+	if(BestFlipScore==-INF){
 		if(BestMove.st!=-1)
 			return BestMove;
 		else
 			cerr <<"GGGGGGGGG"<<endl;
 	}
-	c=rand()%c;
-	for(p=0;p<32;p++)if(B.fin[p]==FIN_X&&--c<0)break;
-	return MOV(p,p);
+
+
+	return BestFlip;
 }
 
 FIN type2fin(int type) {

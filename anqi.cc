@@ -91,6 +91,8 @@ void BOARD::NewGame() {
 	static const int tbl[]={1,2,2,2,2,2,5};
 	who=-1;
 	total_sum[0] = total_sum[1] = 16;
+	total_pos_score[0] = total_pos_score[1] =0 ;
+	dark_cnt[0] = dark_cnt[1] = 16;
 	for(POS p=0;p<32;p++)fin[p]=FIN_X;
 	for(int i=0;i<14;i++){
 		cnt[i]=tbl[GetLevel(FIN(i))];
@@ -122,6 +124,8 @@ void BOARD::Init(int Board[32], int Piece[14], int Color) {
 			total_cnt[i] = initial_pieces[i];
 		}
 		total_sum [0] = total_sum[1] = 16;
+		dark_cnt[0] = dark_cnt[1] = 16;
+		total_pos_score[0] = total_pos_score[1] =0 ;
     for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case 0: fin[i] = FIN_E;break;
@@ -153,6 +157,8 @@ void BOARD::Init(char Board[32], int Piece[14], int Color) {
 			total_cnt[i] = initial_pieces[i];
     }
 		total_sum[0] = total_sum[1] =16;
+		dark_cnt[0] = dark_cnt[1] = 16;
+		total_pos_score[0] = total_pos_score[1] =0 ;
 		for (int i = 0 ; i < 32; ++i) {
 			switch(Board[i]) {
 			    case '-': fin[i] = FIN_E;break;
@@ -197,6 +203,8 @@ int BOARD::LoadGame(const char *fn) {
 
 	while(fgetc(fp)!='\n');
 	total_sum[0] = total_sum[1] = 16;
+	total_pos_score[0] = total_pos_score[1] =0 ;
+	dark_cnt[0] = dark_cnt[1] = 16;
 	fscanf(fp," %*c");
 	for(int i=0;i<14;i++)fscanf(fp,"%d",cnt+i);
 	for (int i = 0 ; i < 14; ++i) {
@@ -242,7 +250,7 @@ void BOARD::Display() const {
 			SetConsoleTextAttribute(hErr,12);
 #endif
 			fputs("  ",stderr);
-			for(int j=0;j<7;j++)for(int k=0;k<cnt[j];k++)for(int j=7;j<14;j++)for(int k=0;k<cnt[j];k++)fprintf(stderr,ANSI_COLOR_RED "%s" ANSI_COLOR_RESET ,nam[j]);
+			for(int j=0;j<7;j++)for(int k=0;k<cnt[j];k++)fprintf(stderr,ANSI_COLOR_RED "%s" ANSI_COLOR_RESET ,nam[j]);
 		}
 		fputc('\n',stderr);
 		for(int j=0;j<4;j++) {
@@ -304,7 +312,9 @@ void BOARD::Display() const {
 		fprintf(stderr,"%d ",cnt[i]);
 	}
 	fputc('\n',stderr);
-	fprintf(stderr,"red = %d , black = %d\n",total_sum[0],total_sum[1]);
+	fprintf(stderr, ANSI_COLOR_RED "live= %d , dark = %d\n" ANSI_COLOR_RESET,total_sum[0],dark_cnt[0]);
+	fprintf(stderr, ANSI_COLOR_BLUE "live = %d , dark = %d\n" ANSI_COLOR_RESET,total_sum[1],dark_cnt[1]);
+
 }
 
 int BOARD::MoveGen(MOVLST &lst) const {
@@ -356,8 +366,20 @@ int BOARD::MoveGen(MOVLST &lst) const {
 
 
 	}
+	/*for (POS p =0 ; p <  32; p++){
+		if(GetColor(FIN(p))==-1 ){
+			for(int i=0; i < 14 ;i++){
+				if(cnt[i] != 0){
+					lst.mov[lst.num] = MOV();
+					lst.prob[lst.num] = (double ) cnt[i] / (dark_cnt[0]+dark_cnt[1]);
+					lst.piece[lst.num] = FIN(i);
+					lst.num++;
+				}
+			}
+		}
+	}*/
 	//qsort(lst.mov,lst.num,sizeof(MOV),compare_mov);
-	lst.sort();
+	//lst.sort();
 	return lst.num;
 }
 
@@ -433,9 +455,13 @@ void BOARD::Flip(POS p,FIN f) {
 	cnt[f]--;
 	if(who==-1)
 		who=GetColor(f);
+	total_pos_score[GetColor(f)]+=pos_score[p];
+	dark_cnt[GetColor(f)]--;
 	who^=1;
 	key^= turn[who];
 	check^= turn[who];
+	key ^= zobrist_table[p][f];
+	check ^= check_table[p][f];
 }
 
 void BOARD::Move(MOV m) {
@@ -443,7 +469,10 @@ void BOARD::Move(MOV m) {
 
 		FIN st = fin[m.st];
 		FIN ed = fin[m.ed];
+		total_pos_score[who]-=pos_score[m.st];
+		total_pos_score[who]+=pos_score[m.ed];
 		if(ed != FIN_E){ // remove the effect of removed piece
+			total_pos_score[who^1]-=pos_score[m.ed];
 			key ^= zobrist_table[m.ed][ed];
 			check ^= check_table[m.ed][ed];
 			//cerr<<" st = "<<st<<" ed= " << ed<<endl;
@@ -457,7 +486,9 @@ void BOARD::Move(MOV m) {
 						eat_cnt[x].num_ucs--;
 				}
 			}
+
 		}
+
 		// remove the effect of moved piece
 		key ^= zobrist_table[m.st][st];
 		check ^= check_table[m.st][st];
@@ -473,8 +504,7 @@ void BOARD::Move(MOV m) {
 	} else {
 
 		Flip(m.st);
-		key ^= zobrist_table[m.st][fin[m.st]];
-		check ^= check_table[m.st][fin[m.st]];
+
 	}
 }
 
@@ -483,7 +513,11 @@ void BOARD::DoMove(MOV m, FIN f) {
 
 			FIN st = fin[m.st];
 			FIN ed = fin[m.ed];
+			total_pos_score[who]-=pos_score[m.st];
+			total_pos_score[who]+=pos_score[m.ed];
+
 			if(ed != FIN_E){ // remove the effect of removed piece
+				total_pos_score[who^1]-=pos_score[m.ed];
 				key ^= zobrist_table[m.ed][ed];
 				check ^= check_table[m.ed][ed];
 				total_cnt[ed]--;
@@ -514,8 +548,6 @@ void BOARD::DoMove(MOV m, FIN f) {
 		}
     else {
 			Flip(m.st, f);
-			key ^= zobrist_table[m.st][f];
-			check ^= check_table[m.st][f];
     }
 }
 
@@ -546,7 +578,7 @@ SCORE BOARD::Eval() const {
 	piece_value[5] = (piece_value[1]* 4 )/15;
 	piece_value[5] = (piece_value[1]* 4 )/15;
 
-	return ret_cnt[who]-ret_cnt[who^1];
+	return ret_cnt[who]+total_pos_score[who]-ret_cnt[who^1]-total_pos_score[who^1];
 }
 int BOARD::GetValue(int f) const{
 	int ret =0 ;

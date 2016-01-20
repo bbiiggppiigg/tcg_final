@@ -228,8 +228,10 @@ int BOARD::LoadGame(const char *fn) {
 		if(buf[2]<'0'||buf[2]>'9')break;
 		char xxx[16],yyy[16];
 		const int n=sscanf(buf+2,"%*s%s%s",xxx,yyy);
+		cerr << n <<" "<< xxx << " " << yyy << endl;
 		if(n>=1)LoadGameReplay(*this,xxx);
 		if(n>=2)LoadGameReplay(*this,yyy);
+		//Display();
 	}
 
 	fclose(fp);
@@ -498,13 +500,14 @@ void BOARD::Move(MOV m) {
 
 		fin[m.ed]=fin[m.st];
 		fin[m.st]=FIN_E;
+
 		who^=1;
 		key^= turn[who];
 		check ^= turn[who];
+		//cerr << " in move : who = "<< who<<endl;
 	} else {
-
 		Flip(m.st);
-
+		//cerr <<" after flip : who = "<<who<<endl;
 	}
 }
 
@@ -545,9 +548,11 @@ void BOARD::DoMove(MOV m, FIN f) {
 			who^=1;
 			key^= turn[who];
 			check ^= turn[who];
+			//cerr << " in do move : who = "<< who<<endl;
 		}
     else {
 			Flip(m.st, f);
+			//cerr <<" after flip : who = "<<who<<endl;
     }
 }
 

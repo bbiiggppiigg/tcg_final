@@ -470,7 +470,7 @@ MOV SearchSpecial(const BOARD &B,int dark,int open_empty, int ours, int their){
 			}
 		}
 	}else if(ours ==0){
-		for (POS p = 0; p <32 ;p++){
+		for (p = 0; p <32 ;p++){
 			if(B.fin[p] /7 == (B.who^1) && B.fin[p]%7 == LVL_C){
 				flag =0;
 				if(p%4 +1 < 4 && B.fin[p+1] == FIN_X){
